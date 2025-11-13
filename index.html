@@ -1,1 +1,2577 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Калькулятор трудозатрат по конфигурированию</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      color: #222;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 16px 16px 40px 16px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 16px 0;
+    }
+    h2 {
+      font-size: 18px;
+      margin: 24px 0 8px 0;
+    }
+    h3 {
+      font-size: 16px;
+      margin: 16px 0 8px 0;
+    }
+    .panel {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 12px 12px 8px 12px;
+      margin-bottom: 12px;
+    }
+    .panel-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 160px;
+      flex: 1;
+    }
+    label {
+      font-size: 12px;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 48px;
+    }
+    .small-input {
+      max-width: 120px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 5px 10px;
+      font-size: 13px;
+      border-radius: 4px;
+      border: 1px solid #888;
+      background: #f0f0f0;
+      cursor: pointer;
+      margin-right: 6px;
+      margin-bottom: 4px;
+    }
+    .btn-primary {
+      background: #1976d2;
+      border-color: #155a9c;
+      color: #fff;
+    }
+    .btn-danger {
+      background: #c62828;
+      border-color: #8e0000;
+      color: #fff;
+    }
+    .btn-secondary {
+      background: #eeeeee;
+    }
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .sections-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 1100px) {
+      .sections-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .section {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .section-subinfo {
+      font-size: 11px;
+      color: #777;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 3px 4px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #f2f2f2;
+      font-weight: 600;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+    tbody tr.hidden-row {
+      display: none;
+    }
+    .tag {
+      display: inline-block;
+      padding: 1px 4px;
+      font-size: 10px;
+      border-radius: 3px;
+      background: #e0f2f1;
+      color: #00695c;
+      margin-right: 2px;
+      margin-bottom: 2px;
+    }
+    .tag-individual {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    .tag-unique {
+      background: #fce4ec;
+      color: #ad1457;
+    }
+    .tag-system {
+      background: #ede7f6;
+      color: #4527a0;
+    }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 1100px) {
+      .totals-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .totals-table td,
+    .totals-table th {
+      font-size: 12px;
+      padding: 3px 4px;
+    }
+    .muted {
+      color: #777;
+      font-size: 11px;
+    }
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .search-row .field-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 160px;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .overlay.visible {
+      display: flex;
+    }
+    .editor {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      max-width: 700px;
+      width: 100%;
+      padding: 14px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .editor h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    .editor-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .editor-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      min-width: 180px;
+    }
+    .editor-buttons {
+      margin-top: 10px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .editor-help {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #555;
+      background: #f9f9f9;
+      border-radius: 4px;
+      padding: 6px;
+    }
+    .nowrap {
+      white-space: nowrap;
+    }
+    .text-right {
+      text-align: right;
+    }
+    .text-center {
+      text-align: center;
+    }
+    .link-like {
+      color: #1976d2;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 11px;
+    }
+    .hr-small {
+      border: none;
+      border-top: 1px dashed #ddd;
+      margin: 6px 0;
+    }
+    .error-text {
+      color: #c62828;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Калькулятор трудозатрат по конфигурированию</h1>
+
+  <div class="panel" id="project-panel">
+    <div class="panel-row">
+      <div class="field">
+        <label for="projectName">Проект</label>
+        <input type="text" id="projectName">
+      </div>
+      <div class="field">
+        <label for="projectCustomer">Заказчик</label>
+        <input type="text" id="projectCustomer">
+      </div>
+      <div class="field">
+        <label for="projectContractor">Исполнитель</label>
+        <input type="text" id="projectContractor">
+      </div>
+      <div class="field">
+        <label for="projectDate">Дата</label>
+        <input type="date" id="projectDate">
+      </div>
+    </div>
+    <div class="panel-row">
+      <div class="field">
+        <label for="kPlatform">K_platform</label>
+        <input type="number" id="kPlatform" step="0.01" class="small-input">
+      </div>
+      <div class="field">
+        <label for="roundingSelect">Точность округления (CSV/отчёт)</label>
+        <select id="roundingSelect" class="small-input">
+          <option value="0.1">0.1</option>
+          <option value="0.01">0.01</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="showPhasesCheckbox">Разложение по фазам (отображение)</label>
+        <div>
+          <input type="checkbox" id="showPhasesCheckbox"> <span class="muted">показывать фазовые итоги</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Методика</label>
+        <div class="muted">
+          Версия: <span id="methodologyVersion"></span>,
+          дата: <span id="methodologyDate"></span><br>
+          Версия в проекте: <span id="projectMethodologyVersion"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-row">
+      <div>
+        <button class="btn btn-primary" id="btnExportJson">Экспорт JSON проекта</button>
+        <button class="btn" id="btnImportJson">Импорт JSON проекта</button>
+        <input type="file" id="importJsonFile" accept="application/json" style="display:none">
+        <button class="btn" id="btnExportCsvSummary">Экспорт CSV (сводная)</button>
+        <button class="btn" id="btnExportCsvDetailed">Экспорт CSV (детальная)</button>
+      </div>
+    </div>
+    <div class="panel-row">
+      <div>
+        <button class="btn btn-secondary" id="btnImportMethodology">Импорт методики (JSON-справочник)</button>
+        <input type="file" id="importMethodologyFile" accept="application/json" style="display:none">
+        <span class="muted">Смена версии методики через JSON-справочник элементов</span>
+      </div>
+    </div>
+    <div class="panel-row">
+      <div>
+        <button class="btn btn-danger" id="btnResetProject">Сброс проекта</button>
+        <span class="muted">Удаляет все позиции и параметры, остаётся только пустой проект.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="search-row">
+      <div class="field-inline" style="flex:2;">
+        <label for="searchInput">Поиск по позициям (код, наименование, комментарий)</label>
+        <input type="text" id="searchInput" placeholder="Введите текст для фильтрации строк">
+      </div>
+      <div class="field-inline" style="flex:1;">
+        <label for="sortSelect">Сортировка внутри разделов</label>
+        <select id="sortSelect" class="small-input">
+          <option value="none">Без сортировки (по вводу)</option>
+          <option value="code">По коду элемента</option>
+          <option value="name">По наименованию элемента</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="sections-grid" id="sectionsContainer"></div>
+
+  <div class="panel totals-grid" id="totalsPanel">
+    <div>
+      <h2>Итоги по проекту</h2>
+      <table class="totals-table">
+        <tbody>
+        <tr>
+          <th class="nowrap">Суммарная трудоёмкость (Σ Eff_i)</th>
+          <td class="text-right" id="totalSumCfg"></td>
+        </tr>
+        <tr>
+          <th class="nowrap">K_platform</th>
+          <td class="text-right" id="totalKPlatform"></td>
+        </tr>
+        <tr>
+          <th class="nowrap">Корректировка платформы</th>
+          <td class="text-right" id="totalKAdj"></td>
+        </tr>
+        <tr>
+          <th class="nowrap">Итого с учётом платформы (TOTAL)</th>
+          <td class="text-right" id="totalTotal"></td>
+        </tr>
+        </tbody>
+      </table>
+      <div id="totalsPhasesBlock">
+        <h3>Разложение по фазам (итого)</h3>
+        <table class="totals-table">
+          <thead>
+          <tr>
+            <th>Фаза</th>
+            <th class="text-right">Трудоёмкость</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>CFG (конфигурирование)</td>
+            <td class="text-right" id="totalPhaseCfg"></td>
+          </tr>
+          <tr>
+            <td>ANDS (анализ и проектирование)</td>
+            <td class="text-right" id="totalPhaseAnds"></td>
+          </tr>
+          <tr>
+            <td>TEST (тестирование)</td>
+            <td class="text-right" id="totalPhaseTest"></td>
+          </tr>
+          <tr>
+            <td>DOC (документирование)</td>
+            <td class="text-right" id="totalPhaseDoc"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="muted" style="margin-top:6px;">
+        SUM_CFG = Σ Eff_i (по всем позициям без учёта K_platform)<br>
+        TOTAL = SUM_CFG × K_platform
+      </div>
+    </div>
+    <div>
+      <h2>Индивидуальные элементы и уникальная логика</h2>
+      <div id="individualsContainer"></div>
+      <hr class="hr-small">
+      <div class="muted">
+        В списке отражены элементы с индивидуальными значениями CFG (индивидуально / CFG_custom),
+        а также позиции с флагами уникальной логики и системных расчётов.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="itemEditorOverlay">
+  <div class="editor">
+    <h3 id="editorTitle">Новая позиция</h3>
+    <div class="editor-row">
+      <div class="editor-field">
+        <label>Раздел методики</label>
+        <div id="editorGroupLabel" class="muted"></div>
+      </div>
+      <div class="editor-field">
+        <label for="editorElementSelect">Элемент</label>
+        <select id="editorElementSelect"></select>
+      </div>
+    </div>
+    <div class="editor-row">
+      <div class="editor-field">
+        <label for="editorCfgBaseInput">CFG базовое</label>
+        <input type="number" id="editorCfgBaseInput" step="0.01">
+        <div id="editorCfgBaseLimits" class="muted"></div>
+      </div>
+      <div class="editor-field" id="editorCustomCfgField" style="display:none;">
+        <label for="editorCfgCustomInput">CFG (индивидуальное значение)</label>
+        <input type="number" id="editorCfgCustomInput" step="0.01" min="0">
+        <div id="editorCfgCustomHint" class="muted"></div>
+      </div>
+      <div class="editor-field">
+        <label for="editorQuantityInput">Количество</label>
+        <input type="number" id="editorQuantityInput" step="1" min="1">
+      </div>
+    </div>
+    <div class="editor-row" id="editorRuleParamsRow" style="display:none;">
+      <div class="editor-field">
+        <label id="editorRuleParamLabel"></label>
+        <input type="number" id="editorRuleParamInput" step="1" min="0">
+        <div id="editorRuleParamHint" class="muted"></div>
+      </div>
+    </div>
+    <div class="editor-row" id="editorFlagsRow" style="display:none;">
+      <div class="editor-field">
+        <label>Флаги / множители</label>
+        <div id="editorFlagsContainer" class="muted"></div>
+      </div>
+    </div>
+    <div class="editor-row">
+      <div class="editor-field">
+        <label for="editorCommentInput">Комментарий</label>
+        <textarea id="editorCommentInput"></textarea>
+      </div>
+    </div>
+    <div id="editorError" class="error-text" style="display:none;"></div>
+    <div class="editor-buttons">
+      <button class="btn btn-primary" id="editorSaveBtn">Сохранить</button>
+      <button class="btn" id="editorCancelBtn">Отмена</button>
+    </div>
+    <div id="editorHelp" class="editor-help"></div>
+  </div>
+</div>
+
+<script>
+  // Методика: JSON-справочник элементов
+  const methodology = {
+    version: "1.0",
+    date: "2025-11-13",
+    elements: [
+      // Разворачивание и настройка
+      {
+        code: "1.1",
+        group: "Разворачивание и настройка",
+        name: "Предметная область, дерево ОН и системные справочники",
+        cfg_min: 0.6,
+        cfg_max: 1.0,
+        // по примеру в ТЗ (k_i = 2.4, cfg_final=1.05, фазы) принимаем ANDS=1, DOC=0.4
+        k_ANDS: 1.0,
+        k_TEST: 0,
+        k_DOC: 0.4,
+        calc_rules: {
+          type: "increment",
+          base_value: 50,
+          step: 10,
+          delta: 0.1,
+          param_key: "on_count",
+          param_label: "Количество объектов наблюдения (ОН)"
+        }
+      },
+      {
+        code: "1.2",
+        group: "Разворачивание и настройка",
+        name: "Структура организации",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0,
+        calc_rules: {
+          type: "increment",
+          base_value: 10,
+          step: 5,
+          delta: 0.1,
+          param_key: "org_units",
+          param_label: "Количество подразделений"
+        }
+      },
+      {
+        code: "1.3",
+        group: "Разворачивание и настройка",
+        name: "Базовые группы признаков",
+        cfg_fixed: 0.05,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "1.4",
+        group: "Разворачивание и настройка",
+        name: "Базовые маппинги",
+        cfg_min: 0.05,
+        cfg_max: 0.1,
+        k_ANDS: 0,
+        k_TEST: 0.05,
+        k_DOC: 0.1
+      },
+
+      // Бизнес-процессы
+      {
+        code: "2.1",
+        group: "Бизнес-процессы",
+        name: "Типовой БП без доп. конфигурирования",
+        cfg_min: 0.2,
+        cfg_max: 0.5,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0
+      },
+      {
+        code: "2.2",
+        group: "Бизнес-процессы",
+        name: "Простой БП",
+        cfg_fixed: 2.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.3
+      },
+      {
+        code: "2.3",
+        group: "Бизнес-процессы",
+        name: "БП 1 категории",
+        cfg_min: 3.0,
+        cfg_max: 5.0,
+        k_ANDS: 0.7,
+        k_TEST: 0.5,
+        k_DOC: 0.4
+      },
+      {
+        code: "2.4",
+        group: "Бизнес-процессы",
+        name: "БП 2 категории",
+        cfg_min: 6.0,
+        cfg_max: 9.0,
+        k_ANDS: 0.7,
+        k_TEST: 0.5,
+        k_DOC: 0.4
+      },
+      {
+        code: "2.5",
+        group: "Бизнес-процессы",
+        name: "БП 3 категории",
+        cfg_fixed: 9.0,
+        k_ANDS: 1.3,
+        k_TEST: 1.0,
+        k_DOC: 1.0
+      },
+      {
+        code: "2.6",
+        group: "Бизнес-процессы",
+        name: "БП по спец. требованиям",
+        individual: true,
+        k_ANDS: 1.3,
+        k_TEST: 1.0,
+        k_DOC: 1.5
+      },
+
+      // Отчёты
+      {
+        code: "3.1",
+        group: "Отчёты",
+        name: "Шаблон отчёта (простой)",
+        cfg_min: 0.1,
+        cfg_max: 0.2,
+        k_ANDS: 0.5,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "3.2",
+        group: "Отчёты",
+        name: "Шаблон отчёта (сложный)",
+        cfg_min: 0.3,
+        cfg_max: 0.5,
+        k_ANDS: 1.0,
+        k_TEST: 0.5,
+        k_DOC: 0.4
+      },
+      {
+        code: "3.3",
+        group: "Отчёты",
+        name: "Шаблон (повышенной сложности)",
+        cfg_min: 0.5,
+        cfg_max: 2.0,
+        k_ANDS: 1.0,
+        k_TEST: 1.0,
+        k_DOC: 0.4
+      },
+      {
+        code: "3.4",
+        group: "Отчёты",
+        name: "Простой отчёт",
+        cfg_min: 0.5,
+        cfg_max: 1.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0
+      },
+      {
+        code: "3.5",
+        group: "Отчёты",
+        name: "Отчёт 1 категории",
+        cfg_min: 1.5,
+        cfg_max: 2.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0
+      },
+      {
+        code: "3.6",
+        group: "Отчёты",
+        name: "Отчёт 2 категории",
+        cfg_min: 2.5,
+        cfg_max: 3.5,
+        k_ANDS: 0,
+        k_TEST: 0.25,
+        k_DOC: 0
+      },
+      {
+        code: "3.7",
+        group: "Отчёты",
+        name: "Отчёт 3 категории",
+        cfg_min: 4.0,
+        cfg_max: 7.0,
+        k_ANDS: 0,
+        k_TEST: 0.3,
+        k_DOC: 0
+      },
+      {
+        code: "3.8",
+        group: "Отчёты",
+        name: "Отчёт повышенной категории",
+        cfg_min: 8.0,
+        cfg_max: 10.0,
+        k_ANDS: 0,
+        k_TEST: 0.5,
+        k_DOC: 0
+      },
+      {
+        code: "3.9",
+        group: "Отчёты",
+        name: "Отчёт по спец. требованиям",
+        individual: true,
+        k_ANDS: 0,
+        k_TEST: 0.5,
+        k_DOC: 0
+      },
+
+      // Паспорт / вкладки / ВлС / УСГ
+      {
+        code: "4.1",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Подключение базовой вкладки",
+        cfg_fixed: 0.02,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "4.2",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Простая кастомная вкладка",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.3",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Кастомная вкладка 1 категории",
+        cfg_min: 0.5,
+        cfg_max: 1.5,
+        k_ANDS: 0.5,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.4",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Кастомная вкладка 2 категории",
+        cfg_min: 1.5,
+        cfg_max: 3.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.5",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Кастомная вкладка повышенной сложности",
+        individual: true,
+        k_ANDS: 0.7,
+        k_TEST: 0.3,
+        k_DOC: 0.3
+      },
+      {
+        code: "4.6",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Простая ВлС",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.7",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "ВлС 1 категории",
+        cfg_min: 0.5,
+        cfg_max: 1.5,
+        k_ANDS: 0.5,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.8",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "ВлС повышенной сложности",
+        individual: true,
+        k_ANDS: 0.7,
+        k_TEST: 0.3,
+        k_DOC: 0.3
+      },
+      {
+        code: "4.9",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Вычислимое поле",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0.1,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.10",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Вычислимое поле (сложное)",
+        cfg_min: 1.0,
+        cfg_max: 2.0,
+        k_ANDS: 0.1,
+        k_TEST: 0.5,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.11",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Вычислимое поле (уникальная логика)",
+        individual: true,
+        k_ANDS: 0.5,
+        k_TEST: 1.0,
+        k_DOC: 0.4
+      },
+      {
+        code: "4.12",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Этап УСГ",
+        cfg_fixed: 0.1,
+        k_ANDS: 0.5,
+        k_TEST: 0.3,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.13",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Простая кастомная вкладка в УСГ",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.14",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Кастомная вкладка в УСГ 1 категории",
+        cfg_min: 0.5,
+        cfg_max: 1.5,
+        k_ANDS: 0.5,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.15",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Шаблоны УСГ",
+        cfg_min: 0.1,
+        cfg_max: 0.15,
+        k_ANDS: 0.2,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "4.16",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Уровни УСГ",
+        cfg_fixed: 0.1,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1,
+        calc_rules: {
+          type: "multiplier",
+          base_value: 20,
+          step: 5,
+          multiplier: 1.05,
+          param_key: "usg_levels",
+          param_label: "Количество этапов УСГ"
+        }
+      },
+      {
+        code: "4.17",
+        group: "Паспорт / вкладки / ВлС / УСГ",
+        name: "Связь УСГ и БП",
+        cfg_fixed: 0.3,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+
+      // Маппинги
+      {
+        code: "5.1",
+        group: "Маппинги",
+        name: "Связь этапа УСГ и БП",
+        cfg_min: 0.25,
+        cfg_max: 0.8,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "5.2",
+        group: "Маппинги",
+        name: "Автоподбор шаблона УСГ",
+        cfg_min: 0.25,
+        cfg_max: 0.8,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1,
+        supports_unique_logic: true
+      },
+      {
+        code: "5.3",
+        group: "Маппинги",
+        name: "Маппинг для групп признаков",
+        cfg_min: 0.25,
+        cfg_max: 0.8,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1,
+        supports_unique_logic: true
+      },
+      {
+        code: "5.4",
+        group: "Маппинги",
+        name: "Включение группы показателей в паспорт",
+        cfg_min: 0.25,
+        cfg_max: 0.8,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1,
+        supports_unique_logic: true,
+        calc_rules: {
+          type: "increment",
+          base_value: 1,
+          step: 1,
+          delta: 0.5,
+          param_key: "groups_count",
+          param_label: "Количество групп показателей (включая базовую)"
+        }
+      },
+      {
+        code: "5.5",
+        group: "Маппинги",
+        name: "Связь БП с объектом контроля",
+        cfg_min: 0.25,
+        cfg_max: 0.8,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1,
+        supports_unique_logic: true
+      },
+
+      // Конфигурируемые выборки и динамические реестры
+      {
+        code: "6.1",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Установка базовой выборки",
+        cfg_fixed: 0.05,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "6.2",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Доработка выборки",
+        cfg_fixed: 2.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.3
+      },
+      {
+        code: "6.3",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Разработка выборки (без разработчиков)",
+        cfg_min: 2.0,
+        cfg_max: 4.0,
+        k_ANDS: 0.5,
+        k_TEST: 1.0,
+        k_DOC: 1.0
+      },
+      {
+        code: "6.4",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Разработка выборки (с разработчиками)",
+        individual: true,
+        k_ANDS: 0,
+        k_TEST: 1.0,
+        k_DOC: 1.0
+      },
+      {
+        code: "6.5",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Установка базового реестра",
+        cfg_fixed: 0.05,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "6.6",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Простой реестр",
+        cfg_min: 1.0,
+        cfg_max: 2.0,
+        k_ANDS: 0.5,
+        k_TEST: 1.0,
+        k_DOC: 0.1
+      },
+      {
+        code: "6.7",
+        group: "Конфигурируемые выборки и динамические реестры",
+        name: "Реестр по спец. требованиям",
+        cfg_fixed: 10.0,
+        k_ANDS: 0,
+        k_TEST: 2.0,
+        k_DOC: 0.1
+      },
+
+      // Рабочие столы
+      {
+        code: "7.1",
+        group: "Рабочие столы",
+        name: "Дизайн РС 1 кат.",
+        cfg_min: 0.25,
+        cfg_max: 0.5,
+        k_ANDS: 0.5,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "7.2",
+        group: "Рабочие столы",
+        name: "Дизайн РС 2 кат.",
+        cfg_min: 0.5,
+        cfg_max: 2.0,
+        k_ANDS: 1.0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "7.3",
+        group: "Рабочие столы",
+        name: "Дизайн РС повыш. сложности",
+        cfg_min: 2.0,
+        cfg_max: 5.0,
+        k_ANDS: 1.0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "7.4",
+        group: "Рабочие столы",
+        name: "Базовый РС",
+        cfg_min: 0.5,
+        cfg_max: 1.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0.1
+      },
+      {
+        code: "7.5",
+        group: "Рабочие столы",
+        name: "РС 1 кат.",
+        cfg_min: 1.0,
+        cfg_max: 2.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0.2
+      },
+      {
+        code: "7.6",
+        group: "Рабочие столы",
+        name: "РС 2 кат.",
+        cfg_min: 2.0,
+        cfg_max: 3.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0.3
+      },
+      {
+        code: "7.7",
+        group: "Рабочие столы",
+        name: "РС 3 кат.",
+        cfg_min: 3.0,
+        cfg_max: 4.0,
+        k_ANDS: 0,
+        k_TEST: 0.1,
+        k_DOC: 0.5
+      },
+
+      // Иные элементы
+      {
+        code: "8.1",
+        group: "Иные элементы",
+        name: "Группа признаков",
+        cfg_fixed: 0.05,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1,
+        calc_rules: {
+          type: "increment",
+          base_value: 30,
+          step: 30,
+          delta: 0.5,
+          param_key: "values_count",
+          param_label: "Количество значений в группе"
+        }
+      },
+      {
+        code: "8.2",
+        group: "Иные элементы",
+        name: "Импорт типового набора показателей",
+        cfg_min: 0.25,
+        cfg_max: 0.9,
+        k_ANDS: 0.25,
+        k_TEST: 0.1,
+        k_DOC: 0.1,
+        calc_rules: {
+          type: "multiplier",
+          base_value: 20,
+          step: 20,
+          multiplier: 1.2,
+          param_key: "indicators_count",
+          param_label: "Количество показателей в наборе"
+        }
+      },
+      {
+        code: "8.3",
+        group: "Иные элементы",
+        name: "Простой показатель",
+        cfg_min: 0.005,
+        cfg_max: 0.01,
+        k_ANDS: 0.05,
+        k_TEST: 0,
+        k_DOC: 0.05
+      },
+      {
+        code: "8.4",
+        group: "Иные элементы",
+        name: "Вычисляемый показатель",
+        cfg_fixed: 0.02,
+        k_ANDS: 0.05,
+        k_TEST: 0,
+        k_DOC: 0.05
+      },
+      {
+        code: "8.5",
+        group: "Иные элементы",
+        name: "Системный показатель",
+        cfg_min: 0.1,
+        cfg_max: 0.2,
+        k_ANDS: 0.05,
+        k_TEST: 0.5,
+        k_DOC: 0.05
+      },
+      {
+        code: "8.6",
+        group: "Иные элементы",
+        name: "Группа показателей",
+        cfg_fixed: 0.02,
+        k_ANDS: 0.05,
+        k_TEST: 0,
+        k_DOC: 0.05
+      },
+      {
+        code: "8.7",
+        group: "Иные элементы",
+        name: "Типы связей объектов",
+        cfg_fixed: 0.02,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "8.8",
+        group: "Иные элементы",
+        name: "Расширение системных справочников",
+        cfg_min: 0.05,
+        cfg_max: 0.1,
+        k_ANDS: 1.0,
+        k_TEST: 0.01,
+        k_DOC: 0.1,
+        supports_system_calculations: true
+      },
+      {
+        code: "8.9",
+        group: "Иные элементы",
+        name: "Пользовательский справочник (≤10 значений)",
+        cfg_fixed: 0.02,
+        k_ANDS: 0.05,
+        k_TEST: 0,
+        k_DOC: 0.05
+      },
+      {
+        code: "8.10",
+        group: "Иные элементы",
+        name: "Пользовательский справочник (>10 значений)",
+        cfg_fixed: 0.05,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.11",
+        group: "Иные элементы",
+        name: "Изменения состава справочника",
+        cfg_min: 0.01,
+        cfg_max: 0.02,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.12",
+        group: "Иные элементы",
+        name: "Стиль на карте (1 свойство)",
+        cfg_min: 0.1,
+        cfg_max: 1.0,
+        k_ANDS: 0.05,
+        k_TEST: 0.1,
+        k_DOC: 0.05,
+        calc_rules: {
+          type: "multiplier",
+          base_value: 1,
+          step: 1,
+          multiplier: 0.5,
+          param_key: "styles_count",
+          param_label: "Количество стилей (свойств)"
+        }
+      },
+      {
+        code: "8.13",
+        group: "Иные элементы",
+        name: "Стиль повышенной сложности",
+        cfg_fixed: 5.0,
+        k_ANDS: 0.1,
+        k_TEST: 0.5,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.14",
+        group: "Иные элементы",
+        name: "Слой карты ГИС «Эталон»",
+        cfg_min: 1.0,
+        cfg_max: 1.5,
+        k_ANDS: 0.5,
+        k_TEST: 1.0,
+        k_DOC: 0.5,
+        calc_rules: {
+          type: "package",
+          pack_size: 10,
+          param_key: "layers_count",
+          param_label: "Количество слоёв"
+        }
+      },
+      {
+        code: "8.15",
+        group: "Иные элементы",
+        name: "Аналитический срез",
+        cfg_min: 0.5,
+        cfg_max: 1.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.16",
+        group: "Иные элементы",
+        name: "Аналитический срез повышенной сложности",
+        cfg_min: 2.0,
+        cfg_max: 3.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.17",
+        group: "Иные элементы",
+        name: "Аналитический срез по спец. требованиям",
+        individual: true,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.3
+      },
+      {
+        code: "8.18",
+        group: "Иные элементы",
+        name: "OLAP-куб",
+        cfg_min: 3.0,
+        cfg_max: 4.0,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.3
+      },
+      {
+        code: "8.19",
+        group: "Иные элементы",
+        name: "OLAP-куб повышенной сложности",
+        cfg_min: 4.0,
+        cfg_max: 5.0,
+        k_ANDS: 1.0,
+        k_TEST: 1.0,
+        k_DOC: 0.5,
+        allow_custom: true
+      },
+      {
+        code: "8.20",
+        group: "Иные элементы",
+        name: "Правила импорта",
+        cfg_min: 0.05,
+        cfg_max: 0.1,
+        k_ANDS: 0,
+        k_TEST: 0.5,
+        k_DOC: 0
+      },
+      {
+        code: "8.21",
+        group: "Иные элементы",
+        name: "Шлюзы импорта",
+        cfg_fixed: 0.05,
+        k_ANDS: 0,
+        k_TEST: 1.0,
+        k_DOC: 0
+      },
+      {
+        code: "8.22",
+        group: "Иные элементы",
+        name: "Шлюз через NiFi",
+        cfg_min: 2.0,
+        cfg_max: 10.0,
+        k_ANDS: 1.0,
+        k_TEST: 1.0,
+        k_DOC: 0.4
+      },
+      {
+        code: "8.23",
+        group: "Иные элементы",
+        name: "Анализ отклонений",
+        cfg_fixed: 0.03,
+        k_ANDS: 0.5,
+        k_TEST: 0.5,
+        k_DOC: 0.4,
+        calc_rules: {
+          type: "multiplier",
+          base_value: 1,
+          step: 1,
+          multiplier: 0.5,
+          param_key: "rules_count",
+          param_label: "Количество правил анализа"
+        }
+      },
+      {
+        code: "8.24",
+        group: "Иные элементы",
+        name: "Тип публикации",
+        cfg_fixed: 0.03,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1
+      },
+      {
+        code: "8.25",
+        group: "Иные элементы",
+        name: "Тип аналитического материала",
+        cfg_fixed: 0.03,
+        k_ANDS: 0.1,
+        k_TEST: 0,
+        k_DOC: 0.1
+      },
+
+      // Интеграционные механизмы
+      {
+        code: "9.1",
+        group: "Интеграционные механизмы",
+        name: "Простой механизм",
+        cfg_min: 1.5,
+        cfg_max: 2.0,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "9.2",
+        group: "Интеграционные механизмы",
+        name: "Механизм 1 кат.",
+        cfg_min: 2.5,
+        cfg_max: 3.5,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "9.3",
+        group: "Интеграционные механизмы",
+        name: "Механизм 2 кат.",
+        cfg_min: 4.0,
+        cfg_max: 7.0,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "9.4",
+        group: "Интеграционные механизмы",
+        name: "Механизм 3 кат.",
+        cfg_min: 8.0,
+        cfg_max: 10.0,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      },
+      {
+        code: "9.5",
+        group: "Интеграционные механизмы",
+        name: "По спец. требованиям",
+        cfg_fixed: 10.0,
+        k_ANDS: 0,
+        k_TEST: 0,
+        k_DOC: 0
+      }
+    ]
+  };
+
+  const K_PLATFORM_DEFAULT = 1.1;
+  const ROUNDING_DEFAULT = 0.1;
+  const STORAGE_KEY = "cfgCalcProject_v1";
+
+  let elementByCode = {};
+  methodology.elements.forEach(e => {
+    elementByCode[e.code] = e;
+    if (typeof e.k_ANDS !== "number") e.k_ANDS = 0;
+    if (typeof e.k_TEST !== "number") e.k_TEST = 0;
+    if (typeof e.k_DOC !== "number") e.k_DOC = 0;
+  });
+
+  let currentProject = null;
+  let editingItemId = null;
+  let editingGroup = null;
+
+  function createEmptyProject() {
+    return {
+      project: {
+        name: "",
+        customer: "",
+        contractor: "",
+        date: "",
+        methodology_version: methodology.version
+      },
+      settings: {
+        k_platform: K_PLATFORM_DEFAULT,
+        rounding: ROUNDING_DEFAULT,
+        show_phase_breakdown: true
+      },
+      items: [],
+      totals: {
+        sum_cfg: 0,
+        k_platform_adjustment: 0,
+        total: 0,
+        phases: {
+          cfg: 0,
+          ands: 0,
+          test: 0,
+          doc: 0
+        }
+      }
+    };
+  }
+
+  function loadProject() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        currentProject = createEmptyProject();
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") {
+        currentProject = createEmptyProject();
+        return;
+      }
+      if (!parsed.project) parsed.project = {};
+      if (!parsed.settings) parsed.settings = {};
+      if (!Array.isArray(parsed.items)) parsed.items = [];
+      if (!parsed.totals) parsed.totals = {sum_cfg:0,k_platform_adjustment:0,total:0,phases:{cfg:0,ands:0,test:0,doc:0}};
+      if (!parsed.project.methodology_version) parsed.project.methodology_version = methodology.version;
+      if (typeof parsed.settings.k_platform !== "number") parsed.settings.k_platform = K_PLATFORM_DEFAULT;
+      if (typeof parsed.settings.rounding !== "number") parsed.settings.rounding = ROUNDING_DEFAULT;
+      if (typeof parsed.settings.show_phase_breakdown !== "boolean") parsed.settings.show_phase_breakdown = true;
+      currentProject = parsed;
+    } catch (e) {
+      currentProject = createEmptyProject();
+    }
+  }
+
+  function saveProject() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentProject));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function roundValue(value, precision) {
+    if (!isFinite(value)) return "";
+    const factor = 1 / (precision || 0.01);
+    return (Math.round(value * factor) / factor).toFixed(precision === 0.1 ? 1 : 2);
+  }
+
+  function computeKi(element) {
+    return 1 + (element.k_ANDS || 0) + (element.k_TEST || 0) + (element.k_DOC || 0);
+  }
+
+  function computeBaseCfg(element, params) {
+    if (!params) params = {};
+    if (element.individual) {
+      const v = Number(params.cfg_custom);
+      return isFinite(v) && v > 0 ? v : 0;
+    }
+    if (element.cfg_fixed != null) {
+      return Number(element.cfg_fixed);
+    }
+    let cfgBase = params.cfg_base != null ? Number(params.cfg_base) : NaN;
+    if (!isFinite(cfgBase) || cfgBase <= 0) {
+      if (element.cfg_min != null && element.cfg_max != null) {
+        cfgBase = (Number(element.cfg_min) + Number(element.cfg_max)) / 2;
+      } else {
+        cfgBase = 0;
+      }
+    }
+    return cfgBase;
+  }
+
+  function computeCfgFinal(element, params, flags) {
+    if (!params) params = {};
+    if (!flags) flags = {};
+    let cfgBase = computeBaseCfg(element, params);
+    let sumAdditive = 0;
+    let productMultipliers = 1;
+
+    if (element.calc_rules) {
+      const r = element.calc_rules;
+      const key = r.param_key;
+      let value = Number(params[key]);
+      if (!isFinite(value) || value < 0) value = 0;
+      if (r.type === "increment") {
+        const stepCount = Math.floor(Math.max(0, value - r.base_value) / r.step);
+        if (stepCount > 0) {
+          sumAdditive += stepCount * r.delta;
+        }
+      } else if (r.type === "multiplier") {
+        const stepCount = Math.floor(Math.max(0, value - r.base_value) / r.step);
+        if (stepCount > 0) {
+          productMultipliers *= Math.pow(r.multiplier, stepCount);
+        }
+      } else if (r.type === "package") {
+        let packCount = value > 0 ? Math.ceil(value / r.pack_size) : 0;
+        if (packCount < 1) packCount = 1;
+        cfgBase = cfgBase * packCount;
+      }
+    }
+
+    let cfgNoFlags = (cfgBase + sumAdditive) * productMultipliers;
+    let cfgFinal = cfgNoFlags;
+
+    if (flags.unique_logic) cfgFinal *= 2;
+    if (flags.system_calculations) cfgFinal *= 2;
+
+    return cfgFinal;
+  }
+
+  function recalcItem(item) {
+    const element = elementByCode[item.element_code];
+    if (!element) return;
+    if (!item.parameters) item.parameters = {};
+    if (!item.flags) item.flags = {};
+    let quantity = Number(item.quantity);
+    if (!isFinite(quantity) || quantity <= 0) quantity = 0;
+
+    const cfgFinal = computeCfgFinal(element, item.parameters, item.flags);
+    const k_i = computeKi(element);
+
+    const eff_cfg = cfgFinal * quantity;
+    const eff_ands = cfgFinal * (element.k_ANDS || 0) * quantity;
+    const eff_test = cfgFinal * (element.k_TEST || 0) * quantity;
+    const eff_doc = cfgFinal * (element.k_DOC || 0) * quantity;
+    const eff_i = cfgFinal * k_i * quantity;
+
+    item.calculated = {
+      cfg_final: cfgFinal,
+      k_i: k_i,
+      eff_i: eff_i,
+      phases: {
+        cfg: eff_cfg,
+        ands: eff_ands,
+        test: eff_test,
+        doc: eff_doc
+      }
+    };
+  }
+
+  function recalcTotals() {
+    let sumCfg = 0;
+    let pCfg = 0, pAnds = 0, pTest = 0, pDoc = 0;
+    currentProject.items.forEach(item => {
+      if (!item.calculated) recalcItem(item);
+      const c = item.calculated;
+      if (!c) return;
+      sumCfg += c.eff_i || 0;
+      if (c.phases) {
+        pCfg += c.phases.cfg || 0;
+        pAnds += c.phases.ands || 0;
+        pTest += c.phases.test || 0;
+        pDoc += c.phases.doc || 0;
+      }
+    });
+    const k_platform = Number(currentProject.settings.k_platform) || 1;
+    const total = sumCfg * k_platform;
+    const adj = total - sumCfg;
+
+    currentProject.totals.sum_cfg = sumCfg;
+    currentProject.totals.total = total;
+    currentProject.totals.k_platform_adjustment = adj;
+    currentProject.totals.phases.cfg = pCfg;
+    currentProject.totals.phases.ands = pAnds;
+    currentProject.totals.phases.test = pTest;
+    currentProject.totals.phases.doc = pDoc;
+  }
+
+  function getGroups() {
+    const groups = [];
+    const seen = {};
+    methodology.elements.forEach(e => {
+      if (!seen[e.group]) {
+        seen[e.group] = true;
+        groups.push(e.group);
+      }
+    });
+    return groups;
+  }
+
+  function getElementsByGroup(group) {
+    return methodology.elements.filter(e => e.group === group);
+  }
+
+  function sortItemsForGroup(items, sortMode) {
+    if (sortMode === "none") return items;
+    const sorted = items.slice();
+    if (sortMode === "code") {
+      sorted.sort((a, b) => {
+        const ea = elementByCode[a.element_code];
+        const eb = elementByCode[b.element_code];
+        const ca = ea ? ea.code : "";
+        const cb = eb ? eb.code : "";
+        return ca.localeCompare(cb, "ru");
+      });
+    } else if (sortMode === "name") {
+      sorted.sort((a, b) => {
+        const ea = elementByCode[a.element_code];
+        const eb = elementByCode[b.element_code];
+        const na = ea ? ea.name : "";
+        const nb = eb ? eb.name : "";
+        return na.localeCompare(nb, "ru");
+      });
+    }
+    return sorted;
+  }
+
+  function renderProjectPanel() {
+    document.getElementById("projectName").value = currentProject.project.name || "";
+    document.getElementById("projectCustomer").value = currentProject.project.customer || "";
+    document.getElementById("projectContractor").value = currentProject.project.contractor || "";
+    document.getElementById("projectDate").value = currentProject.project.date || "";
+    document.getElementById("kPlatform").value = currentProject.settings.k_platform;
+    document.getElementById("roundingSelect").value = String(currentProject.settings.rounding);
+    document.getElementById("showPhasesCheckbox").checked = !!currentProject.settings.show_phase_breakdown;
+
+    document.getElementById("methodologyVersion").textContent = methodology.version;
+    document.getElementById("methodologyDate").textContent = methodology.date;
+    document.getElementById("projectMethodologyVersion").textContent = currentProject.project.methodology_version || methodology.version;
+  }
+
+  function renderSections() {
+    const container = document.getElementById("sectionsContainer");
+    container.innerHTML = "";
+    const groups = getGroups();
+    const searchText = (document.getElementById("searchInput").value || "").trim().toLowerCase();
+    const sortMode = document.getElementById("sortSelect").value || "none";
+
+    groups.forEach(group => {
+      const sectionDiv = document.createElement("div");
+      sectionDiv.className = "section";
+
+      const sectionHeader = document.createElement("div");
+      sectionHeader.className = "section-header";
+
+      const titleSpan = document.createElement("div");
+      titleSpan.className = "section-title";
+      titleSpan.textContent = group;
+
+      const controlsDiv = document.createElement("div");
+      const addBtn = document.createElement("button");
+      addBtn.className = "btn btn-primary";
+      addBtn.textContent = "Добавить позицию";
+      addBtn.addEventListener("click", () => openItemEditorForGroup(group, null));
+      controlsDiv.appendChild(addBtn);
+
+      sectionHeader.appendChild(titleSpan);
+      sectionHeader.appendChild(controlsDiv);
+      sectionDiv.appendChild(sectionHeader);
+
+      const table = document.createElement("table");
+      const thead = document.createElement("thead");
+      const headRow = document.createElement("tr");
+      [
+        "№",
+        "Код",
+        "Наименование элемента",
+        "CFG базовое",
+        "k_i",
+        "CFG итог",
+        "Кол-во",
+        "Трудоёмкость (Eff_i)",
+        "Флаги",
+        "Комментарий",
+        ""
+      ].forEach(text => {
+        const th = document.createElement("th");
+        th.textContent = text;
+        headRow.appendChild(th);
+      });
+      thead.appendChild(headRow);
+      table.appendChild(thead);
+
+      const tbody = document.createElement("tbody");
+
+      const items = currentProject.items.filter(it => {
+        const el = elementByCode[it.element_code];
+        return el && el.group === group;
+      });
+
+      const sortedItems = sortItemsForGroup(items, sortMode);
+
+      let sectionTotalEff = 0;
+      let sectionIdx = 0;
+
+      sortedItems.forEach(item => {
+        const el = elementByCode[item.element_code];
+        if (!el) return;
+        sectionIdx++;
+        const tr = document.createElement("tr");
+        const searchStringParts = [
+          el.code,
+          el.name,
+          item.comment || ""
+        ];
+        const searchString = searchStringParts.join(" ").toLowerCase();
+        tr.dataset.search = searchString;
+
+        const hiddenBySearch = searchText && !searchString.includes(searchText);
+        if (hiddenBySearch) {
+          tr.classList.add("hidden-row");
+        }
+
+        if (!item.calculated) recalcItem(item);
+
+        const calc = item.calculated || {cfg_final:0,k_i:0,eff_i:0};
+
+        sectionTotalEff += calc.eff_i || 0;
+
+        const tdIndex = document.createElement("td");
+        tdIndex.textContent = String(sectionIdx);
+        tdIndex.className = "text-center";
+        tr.appendChild(tdIndex);
+
+        const tdCode = document.createElement("td");
+        tdCode.textContent = el.code;
+        tr.appendChild(tdCode);
+
+        const tdName = document.createElement("td");
+        tdName.textContent = el.name;
+        tr.appendChild(tdName);
+
+        const tdCfgBase = document.createElement("td");
+        const cfgBase = computeBaseCfg(el, item.parameters || {});
+        tdCfgBase.className = "text-right";
+        tdCfgBase.textContent = roundValue(cfgBase, currentProject.settings.rounding);
+        tr.appendChild(tdCfgBase);
+
+        const tdKi = document.createElement("td");
+        tdKi.className = "text-right";
+        tdKi.textContent = roundValue(calc.k_i || computeKi(el), currentProject.settings.rounding);
+        tr.appendChild(tdKi);
+
+        const tdCfgFinal = document.createElement("td");
+        tdCfgFinal.className = "text-right";
+        tdCfgFinal.textContent = roundValue(calc.cfg_final || 0, currentProject.settings.rounding);
+        tr.appendChild(tdCfgFinal);
+
+        const tdQty = document.createElement("td");
+        tdQty.className = "text-right";
+        tdQty.textContent = String(item.quantity || 0);
+        tr.appendChild(tdQty);
+
+        const tdEff = document.createElement("td");
+        tdEff.className = "text-right";
+        tdEff.textContent = roundValue(calc.eff_i || 0, currentProject.settings.rounding);
+        tr.appendChild(tdEff);
+
+        const tdFlags = document.createElement("td");
+        const flagsSpan = document.createElement("div");
+        if (el.individual || (el.allow_custom && item.parameters && item.parameters.cfg_custom > 0)) {
+          const tag = document.createElement("span");
+          tag.className = "tag tag-individual";
+          tag.textContent = "индивидуально";
+          flagsSpan.appendChild(tag);
+        }
+        if (item.flags && item.flags.unique_logic) {
+          const tag = document.createElement("span");
+          tag.className = "tag tag-unique";
+          tag.textContent = "уникальная логика ×2";
+          flagsSpan.appendChild(tag);
+        }
+        if (item.flags && item.flags.system_calculations) {
+          const tag = document.createElement("span");
+          tag.className = "tag tag-system";
+          tag.textContent = "системные расчёты ×2";
+          flagsSpan.appendChild(tag);
+        }
+        tdFlags.appendChild(flagsSpan);
+        tr.appendChild(tdFlags);
+
+        const tdComment = document.createElement("td");
+        tdComment.textContent = item.comment || "";
+        tr.appendChild(tdComment);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "text-center";
+        const editLink = document.createElement("span");
+        editLink.className = "link-like";
+        editLink.textContent = "Ред.";
+        editLink.addEventListener("click", () => openItemEditorForGroup(group, item.id));
+        tdActions.appendChild(editLink);
+
+        tdActions.appendChild(document.createTextNode(" "));
+
+        const deleteLink = document.createElement("span");
+        deleteLink.className = "link-like";
+        deleteLink.textContent = "Удалить";
+        deleteLink.addEventListener("click", () => {
+          if (confirm("Удалить позицию " + el.code + " — " + el.name + "?")) {
+            currentProject.items = currentProject.items.filter(it => it.id !== item.id);
+            recalcTotals();
+            saveProject();
+            renderAll();
+          }
+        });
+        tdActions.appendChild(deleteLink);
+
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      sectionDiv.appendChild(table);
+
+      const sectionFooter = document.createElement("div");
+      sectionFooter.className = "section-subinfo";
+      sectionFooter.textContent = "Итог по разделу: " + roundValue(sectionTotalEff, currentProject.settings.rounding) + " чел.-дней.";
+      sectionDiv.appendChild(sectionFooter);
+
+      container.appendChild(sectionDiv);
+    });
+  }
+
+  function renderTotals() {
+    const rounding = currentProject.settings.rounding;
+    document.getElementById("totalSumCfg").textContent = roundValue(currentProject.totals.sum_cfg, rounding);
+    document.getElementById("totalKPlatform").textContent = roundValue(currentProject.settings.k_platform, rounding);
+    document.getElementById("totalKAdj").textContent = roundValue(currentProject.totals.k_platform_adjustment, rounding);
+    document.getElementById("totalTotal").textContent = roundValue(currentProject.totals.total, rounding);
+
+    const showPhases = !!currentProject.settings.show_phase_breakdown;
+    document.getElementById("totalsPhasesBlock").style.display = showPhases ? "block" : "none";
+    if (showPhases) {
+      document.getElementById("totalPhaseCfg").textContent = roundValue(currentProject.totals.phases.cfg, rounding);
+      document.getElementById("totalPhaseAnds").textContent = roundValue(currentProject.totals.phases.ands, rounding);
+      document.getElementById("totalPhaseTest").textContent = roundValue(currentProject.totals.phases.test, rounding);
+      document.getElementById("totalPhaseDoc").textContent = roundValue(currentProject.totals.phases.doc, rounding);
+    }
+  }
+
+  function renderIndividuals() {
+    const container = document.getElementById("individualsContainer");
+    container.innerHTML = "";
+
+    const list = currentProject.items.filter(item => {
+      const el = elementByCode[item.element_code];
+      if (!el) return false;
+      if (el.individual) return true;
+      if (el.allow_custom && item.parameters && item.parameters.cfg_custom > 0) return true;
+      if (item.flags && (item.flags.unique_logic || item.flags.system_calculations)) return true;
+      return false;
+    });
+
+    if (list.length === 0) {
+      const div = document.createElement("div");
+      div.className = "muted";
+      div.textContent = "Индивидуальные элементы и позиции с уникальной логикой отсутствуют.";
+      container.appendChild(div);
+      return;
+    }
+
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    const headRow = document.createElement("tr");
+    ["Код", "Наименование", "CFG итог", "Комментарий", "Флаги"].forEach(t => {
+      const th = document.createElement("th");
+      th.textContent = t;
+      headRow.appendChild(th);
+    });
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+    list.forEach(item => {
+      const el = elementByCode[item.element_code];
+      if (!item.calculated) recalcItem(item);
+      const tr = document.createElement("tr");
+
+      const tdCode = document.createElement("td");
+      tdCode.textContent = el.code;
+      tr.appendChild(tdCode);
+
+      const tdName = document.createElement("td");
+      tdName.textContent = el.name;
+      tr.appendChild(tdName);
+
+      const tdCfg = document.createElement("td");
+      tdCfg.className = "text-right";
+      tdCfg.textContent = roundValue(item.calculated.cfg_final || 0, currentProject.settings.rounding);
+      tr.appendChild(tdCfg);
+
+      const tdComment = document.createElement("td");
+      tdComment.textContent = item.comment || "";
+      tr.appendChild(tdComment);
+
+      const tdFlags = document.createElement("td");
+      const span = document.createElement("span");
+      let texts = [];
+      if (el.individual) texts.push("индивидуально");
+      if (el.allow_custom && item.parameters && item.parameters.cfg_custom > 0) texts.push("CFG_custom=" + item.parameters.cfg_custom);
+      if (item.flags && item.flags.unique_logic) texts.push("уникальная логика ×2");
+      if (item.flags && item.flags.system_calculations) texts.push("системные расчёты ×2");
+      span.textContent = texts.join("; ");
+      tdFlags.appendChild(span);
+      tr.appendChild(tdFlags);
+
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+  }
+
+  function renderAll() {
+    renderProjectPanel();
+    renderSections();
+    renderTotals();
+    renderIndividuals();
+  }
+
+  function openItemEditorForGroup(group, itemId) {
+    editingGroup = group;
+    editingItemId = itemId;
+    const overlay = document.getElementById("itemEditorOverlay");
+    const titleEl = document.getElementById("editorTitle");
+    const groupLabel = document.getElementById("editorGroupLabel");
+    const elementSelect = document.getElementById("editorElementSelect");
+    const cfgBaseInput = document.getElementById("editorCfgBaseInput");
+    const cfgBaseLimits = document.getElementById("editorCfgBaseLimits");
+    const cfgCustomField = document.getElementById("editorCustomCfgField");
+    const cfgCustomInput = document.getElementById("editorCfgCustomInput");
+    const cfgCustomHint = document.getElementById("editorCfgCustomHint");
+    const ruleRow = document.getElementById("editorRuleParamsRow");
+    const ruleLabel = document.getElementById("editorRuleParamLabel");
+    const ruleInput = document.getElementById("editorRuleParamInput");
+    const ruleHint = document.getElementById("editorRuleParamHint");
+    const flagsRow = document.getElementById("editorFlagsRow");
+    const flagsContainer = document.getElementById("editorFlagsContainer");
+    const quantityInput = document.getElementById("editorQuantityInput");
+    const commentInput = document.getElementById("editorCommentInput");
+    const errorEl = document.getElementById("editorError");
+    const helpEl = document.getElementById("editorHelp");
+
+    errorEl.style.display = "none";
+    errorEl.textContent = "";
+
+    groupLabel.textContent = group;
+    const elements = getElementsByGroup(group);
+
+    elementSelect.innerHTML = "";
+    elements.forEach(el => {
+      const opt = document.createElement("option");
+      opt.value = el.code;
+      opt.textContent = el.code + " — " + el.name;
+      elementSelect.appendChild(opt);
+    });
+
+    let existingItem = null;
+    if (itemId) {
+      existingItem = currentProject.items.find(it => it.id === itemId) || null;
+    }
+
+    if (existingItem) {
+      titleEl.textContent = "Редактирование позиции";
+      elementSelect.value = existingItem.element_code;
+    } else {
+      titleEl.textContent = "Новая позиция";
+      if (elements.length > 0) {
+        elementSelect.value = elements[0].code;
+      }
+    }
+
+    function applyElementToEditor() {
+      const code = elementSelect.value;
+      const el = elementByCode[code];
+      if (!el) return;
+
+      const params = existingItem && existingItem.element_code === code ? (existingItem.parameters || {}) : {};
+
+      // CFG базовое / диапазон
+      if (el.individual) {
+        cfgBaseInput.value = "";
+        cfgBaseInput.disabled = true;
+        cfgBaseLimits.textContent = "CFG задаётся индивидуально (обязателен ввод ниже).";
+      } else if (el.cfg_fixed != null) {
+        const v = Number(el.cfg_fixed);
+        cfgBaseInput.value = v;
+        cfgBaseInput.disabled = true;
+        cfgBaseLimits.textContent = "Фиксированное значение CFG = " + v.toString();
+      } else if (el.cfg_min != null && el.cfg_max != null) {
+        cfgBaseInput.disabled = false;
+        cfgBaseInput.min = el.cfg_min;
+        cfgBaseInput.max = el.cfg_max;
+        let base = params.cfg_base != null ? Number(params.cfg_base) : (Number(el.cfg_min) + Number(el.cfg_max)) / 2;
+        if (!isFinite(base) || base <= 0) {
+          base = (Number(el.cfg_min) + Number(el.cfg_max)) / 2;
+        }
+        cfgBaseInput.value = base;
+        cfgBaseLimits.textContent = "Диапазон CFG: от " + el.cfg_min + " до " + el.cfg_max + ".";
+      } else {
+        cfgBaseInput.disabled = false;
+        cfgBaseInput.value = params.cfg_base != null ? Number(params.cfg_base) : "";
+        cfgBaseLimits.textContent = "CFG базовое (без диапазона).";
+      }
+
+      // Индивидуальное значение
+      if (el.individual || el.allow_custom) {
+        cfgCustomField.style.display = "block";
+        const existingCustom = params.cfg_custom != null ? Number(params.cfg_custom) : "";
+        cfgCustomInput.value = existingCustom;
+        if (el.code === "8.19") {
+          cfgCustomHint.textContent = "При индивидуальном расчёте: CFG_custom > 0 и ≤ 10 (ограничение методики).";
+        } else {
+          cfgCustomHint.textContent = "Индивидуальное значение CFG_custom (> 0). Обязательно для индивидуальных элементов.";
+        }
+      } else {
+        cfgCustomField.style.display = "none";
+        cfgCustomInput.value = "";
+        cfgCustomHint.textContent = "";
+      }
+
+      // Параметр правила наращивания
+      if (el.calc_rules) {
+        ruleRow.style.display = "flex";
+        ruleLabel.textContent = el.calc_rules.param_label || "Параметр наращивания";
+        const val = params[el.calc_rules.param_key] != null ? Number(params[el.calc_rules.param_key]) : "";
+        ruleInput.value = val;
+        let hintText = "";
+        if (el.calc_rules.type === "increment") {
+          hintText = "Аддитивное правило: step_count = floor(max(0, value - base_value) / step); CFG_intermediate = CFG_base + step_count × Δ.";
+        } else if (el.calc_rules.type === "multiplier") {
+          hintText = "Мультипликативное правило: step_count = floor(max(0, value - base_value) / step); CFG_intermediate = CFG_base × (multiplier^step_count).";
+        } else if (el.calc_rules.type === "package") {
+          hintText = "Пакетный расчёт: pack_count = ceil(value / pack_size); CFG_intermediate = CFG_base × pack_count.";
+        }
+        ruleHint.textContent = hintText;
+      } else {
+        ruleRow.style.display = "none";
+        ruleLabel.textContent = "";
+        ruleInput.value = "";
+        ruleHint.textContent = "";
+      }
+
+      // Флаги
+      flagsContainer.innerHTML = "";
+      let hasFlags = false;
+      if (el.supports_unique_logic) {
+        hasFlags = true;
+        const cbId = "flagUniqueLogic";
+        const wrap = document.createElement("div");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.id = cbId;
+        cb.checked = existingItem && existingItem.flags && existingItem.flags.unique_logic;
+        const lbl = document.createElement("label");
+        lbl.setAttribute("for", cbId);
+        lbl.textContent = "Флаг unique_logic (×2) — уникальная логика (5.2–5.5).";
+        wrap.appendChild(cb);
+        wrap.appendChild(document.createTextNode(" "));
+        wrap.appendChild(lbl);
+        flagsContainer.appendChild(wrap);
+      }
+      if (el.supports_system_calculations) {
+        hasFlags = true;
+        const cbId = "flagSystemCalc";
+        const wrap = document.createElement("div");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.id = cbId;
+        cb.checked = existingItem && existingItem.flags && existingItem.flags.system_calculations;
+        const lbl = document.createElement("label");
+        lbl.setAttribute("for", cbId);
+        lbl.textContent = "Флаг system_calculations (×2) — затрагивает системные расчёты (8.8).";
+        wrap.appendChild(cb);
+        wrap.appendChild(document.createTextNode(" "));
+        wrap.appendChild(lbl);
+        flagsContainer.appendChild(wrap);
+      }
+      flagsRow.style.display = hasFlags ? "flex" : "none";
+
+      // Количество
+      if (existingItem) {
+        quantityInput.value = existingItem.quantity || 1;
+      } else {
+        quantityInput.value = 1;
+      }
+
+      // Комментарий
+      if (existingItem) {
+        commentInput.value = existingItem.comment || "";
+      } else {
+        commentInput.value = "";
+      }
+
+      // Справка
+      const k_i = computeKi(el);
+      let rangeText = "";
+      if (el.individual) {
+        rangeText = "CFG: индивидуальное значение.";
+      } else if (el.cfg_fixed != null) {
+        rangeText = "CFG: фиксированное значение " + el.cfg_fixed + ".";
+      } else if (el.cfg_min != null && el.cfg_max != null) {
+        rangeText = "CFG: диапазон [" + el.cfg_min + "; " + el.cfg_max + "].";
+      }
+      let rulesText = "";
+      if (el.calc_rules) {
+        const r = el.calc_rules;
+        if (r.type === "increment") {
+          rulesText = "Тип правила: аддитивное (increment). base_value=" + r.base_value + ", step=" + r.step + ", Δ=" + r.delta + ".";
+        } else if (r.type === "multiplier") {
+          rulesText = "Тип правила: мультипликативное (multiplier). base_value=" + r.base_value + ", step=" + r.step + ", multiplier=" + r.multiplier + ".";
+        } else if (r.type === "package") {
+          rulesText = "Тип правила: пакетное (package). Размер пакета=" + r.pack_size + ".";
+        }
+      } else {
+        rulesText = "Правила наращивания для элемента не заданы.";
+      }
+      helpEl.textContent =
+        "Код: " + el.code + ". " + rangeText +
+        " Коэффициенты фаз: ANDS=" + el.k_ANDS + ", TEST=" + el.k_TEST + ", DOC=" + el.k_DOC +
+        ", k_i = 1 + ANDS + TEST + DOC = " + k_i + ". " + rulesText;
+    }
+
+    elementSelect.addEventListener("change", applyElementToEditor);
+    applyElementToEditor();
+
+    overlay.classList.add("visible");
+  }
+
+  function closeItemEditor() {
+    editingItemId = null;
+    editingGroup = null;
+    document.getElementById("itemEditorOverlay").classList.remove("visible");
+  }
+
+  function getEditorFlags() {
+    const flags = {};
+    const uniqueCb = document.getElementById("flagUniqueLogic");
+    if (uniqueCb) flags.unique_logic = !!uniqueCb.checked;
+    const sysCb = document.getElementById("flagSystemCalc");
+    if (sysCb) flags.system_calculations = !!sysCb.checked;
+    return flags;
+  }
+
+  function showEditorError(msg) {
+    const errorEl = document.getElementById("editorError");
+    errorEl.textContent = msg || "";
+    errorEl.style.display = msg ? "block" : "none";
+  }
+
+  function handleEditorSave() {
+    const elementSelect = document.getElementById("editorElementSelect");
+    const cfgBaseInput = document.getElementById("editorCfgBaseInput");
+    const cfgCustomInput = document.getElementById("editorCfgCustomInput");
+    const ruleInput = document.getElementById("editorRuleParamInput");
+    const quantityInput = document.getElementById("editorQuantityInput");
+    const commentInput = document.getElementById("editorCommentInput");
+
+    const code = elementSelect.value;
+    const el = elementByCode[code];
+    if (!el) {
+      showEditorError("Не выбран элемент методики.");
+      return;
+    }
+
+    let quantity = Number(quantityInput.value);
+    if (!isFinite(quantity) || quantity <= 0) {
+      showEditorError("Количество должно быть положительным числом.");
+      return;
+    }
+
+    const params = {};
+    let cfgBase = null;
+
+    if (el.individual) {
+      cfgBase = null;
+    } else if (el.cfg_fixed != null) {
+      cfgBase = Number(el.cfg_fixed);
+    } else {
+      cfgBase = Number(cfgBaseInput.value);
+      if (!isFinite(cfgBase) || cfgBase <= 0) {
+        showEditorError("CFG базовое должно быть положительным числом.");
+        return;
+      }
+      if (el.cfg_min != null && cfgBase < el.cfg_min - 1e-9) {
+        showEditorError("CFG базовое меньше минимального значения для элемента.");
+        return;
+      }
+      if (el.cfg_max != null && cfgBase > el.cfg_max + 1e-9) {
+        showEditorError("CFG базовое больше максимального значения для элемента.");
+        return;
+      }
+    }
+
+    if (!el.individual && cfgBase != null) {
+      params.cfg_base = cfgBase;
+    }
+
+    if (el.individual || el.allow_custom) {
+      const cv = Number(cfgCustomInput.value);
+      if (!isFinite(cv) || cv <= 0) {
+        showEditorError("Для индивидуальных элементов необходимо указать CFG_custom (> 0).");
+        return;
+      }
+      if (el.code === "8.19" && cv > 10 + 1e-9) {
+        showEditorError("Для элемента 8.19 (OLAP-куб повышенной сложности) CFG_custom ≤ 10.");
+        return;
+      }
+      params.cfg_custom = cv;
+    }
+
+    if (el.calc_rules) {
+      const rawVal = ruleInput.value;
+      if (rawVal === "" || rawVal === null || rawVal === undefined) {
+        showEditorError("Необходимо заполнить параметр правила наращивания для элемента.");
+        return;
+      }
+      const val = Number(rawVal);
+      if (!isFinite(val) || val < 0) {
+        showEditorError("Параметр правила наращивания должен быть неотрицательным числом.");
+        return;
+      }
+      params[el.calc_rules.param_key] = val;
+    }
+
+    const comment = commentInput.value || "";
+    if ((el.individual || el.allow_custom) && comment.trim() === "") {
+      showEditorError("Для индивидуальных элементов комментарий обязателен.");
+      return;
+    }
+
+    const flags = getEditorFlags();
+
+    const itemId = editingItemId || ("item_" + Date.now() + "_" + Math.floor(Math.random() * 10000));
+    let item = currentProject.items.find(it => it.id === itemId);
+    if (!item) {
+      item = {
+        id: itemId,
+        element_code: code,
+        parameters: {},
+        quantity: quantity,
+        comment: comment,
+        flags: {},
+        calculated: {}
+      };
+      currentProject.items.push(item);
+    }
+    item.element_code = code;
+    item.parameters = params;
+    item.quantity = quantity;
+    item.comment = comment;
+    item.flags = flags;
+
+    recalcItem(item);
+    recalcTotals();
+    saveProject();
+    renderAll();
+    closeItemEditor();
+  }
+
+  function exportJsonProject() {
+    const dataStr = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentProject, null, 2));
+    const a = document.createElement("a");
+    a.setAttribute("href", dataStr);
+    a.setAttribute("download", "project_cfg_calculator.json");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function importJsonProject(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!parsed || typeof parsed !== "object") {
+          alert("Некорректный JSON проекта.");
+          return;
+        }
+        currentProject = parsed;
+        if (!currentProject.project) currentProject.project = {};
+        if (!currentProject.settings) currentProject.settings = {};
+        if (!Array.isArray(currentProject.items)) currentProject.items = [];
+        if (!currentProject.totals) currentProject.totals = {sum_cfg:0,k_platform_adjustment:0,total:0,phases:{cfg:0,ands:0,test:0,doc:0}};
+        if (typeof currentProject.settings.k_platform !== "number") currentProject.settings.k_platform = K_PLATFORM_DEFAULT;
+        if (typeof currentProject.settings.rounding !== "number") currentProject.settings.rounding = ROUNDING_DEFAULT;
+        if (typeof currentProject.settings.show_phase_breakdown !== "boolean") currentProject.settings.show_phase_breakdown = true;
+        if (!currentProject.project.methodology_version) currentProject.project.methodology_version = methodology.version;
+
+        currentProject.items.forEach(it => recalcItem(it));
+        recalcTotals();
+        saveProject();
+        renderAll();
+      } catch (err) {
+        alert("Ошибка при чтении JSON: " + err.message);
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function exportCsvSummary() {
+    const precision = currentProject.settings.rounding;
+    const header = "№;Раздел;Код;Наименование;CFG базовое;Параметры;k_i;CFG итог;Количество;Трудоёмкость;Комментарий";
+    const lines = [header];
+    let idx = 0;
+    currentProject.items.forEach(item => {
+      const el = elementByCode[item.element_code];
+      if (!el) return;
+      if (!item.calculated) recalcItem(item);
+      idx++;
+      const params = item.parameters || {};
+      const paramsStr = Object.keys(params).map(k => k + "=" + params[k]).join(", ");
+      const k_i = item.calculated.k_i || computeKi(el);
+      const cfgBase = computeBaseCfg(el, params);
+      const cfgFinal = item.calculated.cfg_final || 0;
+      const eff = item.calculated.eff_i || 0;
+      const row = [
+        idx,
+        el.group,
+        el.code,
+        el.name.replace(/;/g, ","),
+        roundValue(cfgBase, precision),
+        paramsStr.replace(/;/g, ","),
+        roundValue(k_i, precision),
+        roundValue(cfgFinal, precision),
+        item.quantity || 0,
+        roundValue(eff, precision),
+        (item.comment || "").replace(/;/g, ",")
+      ].join(";");
+      lines.push(row);
+    });
+    const csv = lines.join("\r\n");
+    const a = document.createElement("a");
+    a.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+    a.setAttribute("download", "cfg_calculator_summary.csv");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function exportCsvDetailed() {
+    const precision = currentProject.settings.rounding;
+    const header = "№;Код;Элемент;CFG баз;k_i;Кол-во;Итого;CFG;ANDS;TEST;DOC;Комментарий";
+    const lines = [header];
+    let idx = 0;
+    currentProject.items.forEach(item => {
+      const el = elementByCode[item.element_code];
+      if (!el) return;
+      if (!item.calculated) recalcItem(item);
+      idx++;
+      const params = item.parameters || {};
+      const cfgBase = computeBaseCfg(el, params);
+      const k_i = item.calculated.k_i || computeKi(el);
+      const eff = item.calculated.eff_i || 0;
+      const phases = item.calculated.phases || {cfg:0,ands:0,test:0,doc:0};
+      const row = [
+        idx,
+        el.code,
+        el.name.replace(/;/g, ","),
+        roundValue(cfgBase, precision),
+        roundValue(k_i, precision),
+        item.quantity || 0,
+        roundValue(eff, precision),
+        roundValue(phases.cfg || 0, precision),
+        roundValue(phases.ands || 0, precision),
+        roundValue(phases.test || 0, precision),
+        roundValue(phases.doc || 0, precision),
+        (item.comment || "").replace(/;/g, ",")
+      ].join(";");
+      lines.push(row);
+    });
+    const csv = lines.join("\r\n");
+    const a = document.createElement("a");
+    a.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURIComponent(csv));
+    a.setAttribute("download", "cfg_calculator_detailed.csv");
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function importMethodology(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (!parsed || !Array.isArray(parsed.elements)) {
+          alert("Некорректный JSON методики. Ожидается объект с полем elements[].");
+          return;
+        }
+        methodology.version = parsed.version || methodology.version;
+        methodology.date = parsed.date || methodology.date;
+        methodology.elements = parsed.elements;
+        elementByCode = {};
+        methodology.elements.forEach(el => {
+          elementByCode[el.code] = el;
+          if (typeof el.k_ANDS !== "number") el.k_ANDS = 0;
+          if (typeof el.k_TEST !== "number") el.k_TEST = 0;
+          if (typeof el.k_DOC !== "number") el.k_DOC = 0;
+        });
+        currentProject.project.methodology_version = methodology.version;
+        currentProject.items.forEach(it => recalcItem(it));
+        recalcTotals();
+        saveProject();
+        renderAll();
+      } catch (err) {
+        alert("Ошибка при чтении JSON методики: " + err.message);
+      }
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function resetProject() {
+    if (!confirm("Сбросить проект? Все позиции будут удалены, параметры обнулены.")) return;
+    currentProject = createEmptyProject();
+    saveProject();
+    renderAll();
+  }
+
+  function initEvents() {
+    document.getElementById("projectName").addEventListener("input", e => {
+      currentProject.project.name = e.target.value;
+      saveProject();
+    });
+    document.getElementById("projectCustomer").addEventListener("input", e => {
+      currentProject.project.customer = e.target.value;
+      saveProject();
+    });
+    document.getElementById("projectContractor").addEventListener("input", e => {
+      currentProject.project.contractor = e.target.value;
+      saveProject();
+    });
+    document.getElementById("projectDate").addEventListener("input", e => {
+      currentProject.project.date = e.target.value;
+      saveProject();
+    });
+    document.getElementById("kPlatform").addEventListener("input", e => {
+      const v = Number(e.target.value);
+      currentProject.settings.k_platform = isFinite(v) && v > 0 ? v : 1;
+      recalcTotals();
+      saveProject();
+      renderTotals();
+    });
+    document.getElementById("roundingSelect").addEventListener("change", e => {
+      const v = Number(e.target.value);
+      currentProject.settings.rounding = (v === 0.1 || v === 0.01) ? v : ROUNDING_DEFAULT;
+      saveProject();
+      renderAll();
+    });
+    document.getElementById("showPhasesCheckbox").addEventListener("change", e => {
+      currentProject.settings.show_phase_breakdown = !!e.target.checked;
+      saveProject();
+      renderTotals();
+    });
+
+    document.getElementById("btnExportJson").addEventListener("click", exportJsonProject);
+    document.getElementById("btnImportJson").addEventListener("click", () => {
+      document.getElementById("importJsonFile").click();
+    });
+    document.getElementById("importJsonFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        importJsonProject(file);
+        e.target.value = "";
+      }
+    });
+
+    document.getElementById("btnExportCsvSummary").addEventListener("click", exportCsvSummary);
+    document.getElementById("btnExportCsvDetailed").addEventListener("click", exportCsvDetailed);
+
+    document.getElementById("btnImportMethodology").addEventListener("click", () => {
+      document.getElementById("importMethodologyFile").click();
+    });
+    document.getElementById("importMethodologyFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) {
+        importMethodology(file);
+        e.target.value = "";
+      }
+    });
+
+    document.getElementById("btnResetProject").addEventListener("click", resetProject);
+
+    document.getElementById("searchInput").addEventListener("input", () => {
+      renderSections();
+    });
+    document.getElementById("sortSelect").addEventListener("change", () => {
+      renderSections();
+    });
+
+    document.getElementById("editorCancelBtn").addEventListener("click", () => {
+      closeItemEditor();
+    });
+    document.getElementById("editorSaveBtn").addEventListener("click", () => {
+      handleEditorSave();
+    });
+
+    document.getElementById("itemEditorOverlay").addEventListener("click", e => {
+      if (e.target === document.getElementById("itemEditorOverlay")) {
+        closeItemEditor();
+      }
+    });
+  }
+
+  window.addEventListener("load", () => {
+    loadProject();
+    currentProject.items.forEach(it => recalcItem(it));
+    recalcTotals();
+    initEvents();
+    renderAll();
+  });
+</script>
+</body>
+</html>
 
