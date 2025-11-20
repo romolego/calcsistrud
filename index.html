@@ -1,944 +1,2100 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8"/>
   <title>Калькулятор трудозатрат по конфигурированию</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
     :root {
-      --bg: #f7f8fb;
+      --bg: #f8fafc;
+      --fg: #0f172a;
+      --muted: #64748b;
       --card: #ffffff;
-      --accent: #2563eb;
-      --accent-2: #0ea5e9;
-      --text: #111827;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --danger: #ef4444;
-      --success: #10b981;
+      --border: #e2e8f0;
+      --accent: #0ea5e9;
+      --accent-soft: #e0f2fe;
+      --danger: #dc2626;
+      --warn: #d97706;
+      --ok: #059669;
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--fg);
     }
-    header {
-      background: linear-gradient(120deg, var(--accent), var(--accent-2));
-      color: #fff;
-      padding: 32px 20px 24px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    h1, h2, h3, h4 {
+      margin: 0 0 0.5rem 0;
+      font-weight: 600;
     }
-    header h1 {
-      margin: 0 0 8px;
-      font-size: 26px;
+    p {
+      margin: 0 0 0.5rem 0;
     }
-    header p {
-      margin: 0;
-      opacity: 0.9;
-      max-width: 900px;
+    .page {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 16px 16px 32px;
     }
-    main {
-      max-width: 1200px;
-      margin: -30px auto 60px;
-      padding: 0 16px;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-      padding: 16px 18px;
+    .page-header {
       margin-bottom: 16px;
-      border: 1px solid var(--border);
-    }
-    .card h2, .card h3 {
-      margin: 0 0 12px;
-      font-size: 18px;
-    }
-    .muted { color: var(--muted); }
-    .flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .grid { display: grid; gap: 12px; }
-    .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
+      padding: 16px 20px;
+      background: var(--card);
       border-radius: 8px;
       border: 1px solid var(--border);
-      background: #fff;
-      font-size: 14px;
     }
-    textarea { resize: vertical; min-height: 80px; }
-    label { display: block; font-weight: 600; margin-bottom: 6px; }
-    button {
-      border: none;
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-weight: 600;
+    .page-header h1 {
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+    .page-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .section {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 12px 16px 16px;
+      margin-bottom: 12px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .section-header h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+    .section-header small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .section-toggle {
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f1f5f9;
       cursor: pointer;
-      transition: transform 0.05s ease, box-shadow 0.2s ease;
     }
-    button:active { transform: translateY(1px); }
-    button:disabled {
+    .section-toggle:hover {
+      background: #e2e8f0;
+    }
+    .section-body {
+      margin-top: 4px;
+    }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .field {
+      flex: 1 1 200px;
+      min-width: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .field label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      font-size: 12px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      outline: none;
+    }
+    .field textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      background: #ffffff;
+    }
+    input[disabled],
+    select[disabled],
+    button[disabled],
+    textarea[disabled] {
       opacity: 0.6;
       cursor: not-allowed;
-      box-shadow: none;
     }
-    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 18px rgba(37,99,235,0.25); }
-    .btn-secondary { background: #eef2ff; color: #3730a3; }
-    .btn-ghost { background: #f3f4f6; color: var(--text); }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-success { background: var(--success); color: #fff; }
-    .collapse-toggle { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--accent); }
-    .hidden { display: none !important; }
-    .section-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+
+    .button-primary,
+    .button-secondary,
+    .button-ghost,
+    .button-danger {
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      background: #e5e7eb;
+    }
+    .button-primary {
+      background: var(--accent);
+      color: #0b1120;
+      border-color: #0ea5e9;
+    }
+    .button-primary:hover {
+      background: #38bdf8;
+    }
+    .button-secondary {
+      background: #f1f5f9;
+      border-color: var(--border);
+      color: #0f172a;
+    }
+    .button-secondary:hover {
+      background: #e2e8f0;
+    }
+    .button-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .button-ghost:hover {
+      background: #f8fafc;
+    }
+    .button-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+    }
+    .button-danger:hover {
+      background: #fecaca;
+    }
+    .button-sm {
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+    }
+
+    .upload-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+    }
     .section-card {
       position: relative;
-      padding: 14px;
-      border-radius: 12px;
-      background: linear-gradient(180deg, #fff, #f8fafc);
+      border-radius: 10px;
+      padding: 8px 10px 10px;
       border: 1px solid var(--border);
+      background: linear-gradient(135deg, #e0f2fe, #f9fafb);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 96px;
     }
-    .section-card h4 { margin: 0 0 6px; font-size: 16px; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #e0f2fe; color: #075985; }
-    .section-meta { font-size: 13px; color: var(--muted); margin: 6px 0; line-height: 1.4; }
-    .section-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
-    .section-actions label { font-weight: 500; }
-    .fab-btn {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      padding: 8px 12px;
+    .section-card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .section-card-title {
       font-size: 13px;
+      font-weight: 600;
+    }
+    .section-card-meta {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+    }
+    .section-card-meta div {
+      white-space: nowrap;
+    }
+    .section-card-body {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .section-card-flags {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 11px;
+    }
+    .section-card-flags label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .section-card-actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+    }
+    .empty-badge {
+      display: inline-block;
+      background: #fef9c3;
+      border-radius: 999px;
+      padding: 2px 6px;
+      font-size: 10px;
+      color: #854d0e;
+      border: 1px solid #facc15;
+      margin-top: 2px;
+    }
+
+    .table-wrapper {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow: auto;
+      max-height: 520px;
+      background: #ffffff;
     }
     table {
-      width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
+      width: 100%;
+      font-size: 11px;
+      min-width: 980px;
     }
-    thead { background: #f3f4f6; position: sticky; top: 0; z-index: 1; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
-    th { font-weight: 700; }
-    tbody tr:nth-child(every) { background: #fafafa; }
-    .actions button { margin-right: 6px; }
-    .pill { display: inline-block; padding: 2px 6px; border-radius: 6px; background: #e5e7eb; font-size: 12px; }
-    .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
-    .total-item { background: #0f172a; color: #fff; padding: 12px; border-radius: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
-    .total-item span { display: block; font-size: 13px; opacity: 0.8; }
-    .total-item strong { font-size: 18px; }
-    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
-    .divider { height: 1px; background: var(--border); margin: 14px 0; }
-    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #e2e8f0; border-radius: 10px; font-size: 12px; }
-    /* Modal */
-    .modal-overlay {
+    thead {
+      position: sticky;
+      top: 0;
+      background: #e5f2ff;
+      z-index: 1;
+    }
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 4px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    th {
+      font-weight: 600;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) {
+      background: #f9fafb;
+    }
+    tbody tr:hover {
+      background: #eff6ff;
+    }
+    .cell-number {
+      text-align: right;
+      white-space: nowrap;
+    }
+    .cell-actions {
+      white-space: nowrap;
+    }
+    .cell-muted {
+      color: var(--muted);
+    }
+    .tag-flag {
+      display: inline-block;
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      border: 1px solid #94a3b8;
+      color: #475569;
+      background: #e2e8f0;
+      margin-left: 4px;
+    }
+
+    .totals-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .total-card {
+      flex: 1 1 160px;
+      min-width: 140px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      background: #ffffff;
+    }
+    .total-card-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .total-card-value {
+      font-size: 15px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .controls-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .controls-group-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .collapse-toggle-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+    .text-danger {
+      color: var(--danger);
+    }
+    .text-warn {
+      color: var(--warn);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--muted);
+      background: #f8fafc;
+    }
+
+    .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.55);
-      display: flex;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 50;
     }
     .modal {
-      background: #fff;
-      border-radius: 14px;
-      padding: 18px;
-      width: min(940px, 95vw);
-      max-height: 92vh;
-      overflow: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      background: #ffffff;
+      border-radius: 10px;
       border: 1px solid var(--border);
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
-    .modal header { background: none; color: inherit; padding: 0 0 12px; box-shadow: none; }
-    .modal header h3 { margin: 0; }
-    .modal-close { background: transparent; color: var(--muted); }
-    .error { color: var(--danger); font-size: 13px; }
-    .info-text { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; }
-    .chip { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #f1f5f9; margin: 2px 4px 2px 0; font-size: 12px; }
-    .fixed-table-header { overflow: auto; max-height: 480px; }
-    .table-empty { text-align: center; padding: 20px; color: var(--muted); }
+    .modal-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .modal-header h3 {
+      font-size: 14px;
+      margin: 0;
+    }
+    .modal-body {
+      padding: 8px 12px 10px;
+      overflow: auto;
+      font-size: 12px;
+    }
+    .modal-footer {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .formula-block {
+      font-size: 11px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      border: 1px dashed var(--border);
+      padding: 6px 8px;
+      margin-top: 4px;
+      white-space: pre-line;
+    }
+
+    .warning-block {
+      font-size: 11px;
+      background: #fef3c7;
+      border-radius: 6px;
+      border: 1px solid #facc15;
+      padding: 6px 8px;
+      margin-top: 4px;
+      color: #854d0e;
+    }
+
+    .toggle-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .toggle-switch input {
+      margin: 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      font-size: 10px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <header>
+<div class="page">
+  <header class="page-header">
     <h1>Калькулятор трудозатрат по конфигурированию</h1>
-    <p>Одностраничный офлайн-инструмент для расчёта трудоёмкости конфигурирования. Загрузите Excel методику, чтобы начать работу.</p>
+    <p>Одностраничный калькулятор трудоёмкости конфигурирования по методике, загружаемой из Excel-файла. Все расчёты выполняются локально в браузере, без серверной части.</p>
   </header>
-  <main>
-    <section class="card" id="project-card">
-      <div class="flex" style="justify-content: space-between;">
+
+  <!-- Реквизиты проекта -->
+  <section class="section" id="project-section">
+    <div class="section-header">
+      <div>
         <h2>Реквизиты проекта</h2>
-        <button class="btn-ghost" id="project-toggle">Свернуть</button>
+        <small>Общая информация о расчёте</small>
       </div>
-      <div id="project-body" class="grid cols-2">
-        <div><label>Название проекта</label><input id="project-name" type="text" placeholder="Введите название" /></div>
-        <div><label>Дата расчёта</label><input id="project-date" type="date" /></div>
-        <div><label>Версия расчёта</label><input id="project-version" type="text" placeholder="v1.0" /></div>
-        <div><label>Исполнитель</label><input id="project-owner" type="text" placeholder="ФИО" /></div>
-        <div><label>Потенциальный заказчик</label><input id="project-client" type="text" placeholder="Компания" /></div>
+      <button type="button" class="section-toggle" id="toggleProjectMetaBtn">Свернуть</button>
+    </div>
+    <div class="section-body" id="projectMetaBody">
+      <div class="field-row">
+        <div class="field">
+          <label for="projectName">Название проекта</label>
+          <input id="projectName" type="text" placeholder="Например: Внедрение платформы Эталон в регионе"/>
+        </div>
+        <div class="field">
+          <label for="calcDate">Дата расчёта</label>
+          <input id="calcDate" type="date"/>
+        </div>
+        <div class="field">
+          <label for="calcVersion">Версия расчёта</label>
+          <input id="calcVersion" type="text" placeholder="v1.0"/>
+        </div>
       </div>
-    </section>
+      <div class="field-row">
+        <div class="field">
+          <label for="executor">Исполнитель</label>
+          <input id="executor" type="text" placeholder="ФИО / команда"/>
+        </div>
+        <div class="field">
+          <label for="customer">Потенциальный заказчик</label>
+          <input id="customer" type="text" placeholder="Организация / подразделение"/>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <section class="card">
-      <h2>Загрузить методику</h2>
-      <p class="muted">После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.</p>
-      <div class="flex">
-        <input type="file" id="excel-input" accept=".xlsx" />
-        <button class="btn-primary" id="load-excel">Загрузить методику (Excel)</button>
-        <div class="error" id="excel-error"></div>
+  <!-- Загрузка методики -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2>Загрузка методики (Excel)</h2>
+        <small>Главный запуск работы калькулятора</small>
       </div>
-    </section>
+      <span class="badge" id="methodStatusBadge">Методика не загружена</span>
+    </div>
+    <div class="section-body">
+      <div class="field-row">
+        <div class="field">
+          <label for="excelInput">Файл методики (.xlsx)</label>
+          <input id="excelInput" type="file" accept=".xlsx"/>
+          <div class="upload-hint">
+            После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
+            Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <section class="card" id="sections-card">
-      <div class="flex" style="justify-content: space-between; align-items: center;">
+  <!-- Карточки разделов конфигурирования -->
+  <section class="section">
+    <div class="section-header">
+      <div>
         <h2>Разделы конфигурирования</h2>
-        <div class="tag muted">Недоступно до загрузки Excel</div>
+        <small>Карточки разделов формируются по данным методики после загрузки Excel</small>
       </div>
-      <div id="section-container" class="section-cards"></div>
-    </section>
+      <span class="badge" id="sectionsSummaryBadge">Разделы: 0</span>
+    </div>
+    <div class="section-body">
+      <div class="cards-grid" id="sectionsContainer">
+        <!-- Карточки создаются динамически -->
+      </div>
+      <div id="noSectionsHint" class="upload-hint">
+        После загрузки Excel здесь появятся цветные карточки разделов (group_name) с краткой статистикой по каждому разделу.
+      </div>
+    </div>
+  </section>
 
-    <section class="card" id="table-card">
-      <div class="flex" style="justify-content: space-between;">
+  <!-- Таблица расчётов -->
+  <section class="section">
+    <div class="section-header">
+      <div>
         <h2>Таблица расчётов</h2>
-        <button class="btn-primary" id="add-row-btn" disabled>Добавить элемент</button>
+        <small>Строки добавляются через карточки разделов и модальное окно элемента</small>
       </div>
-      <div class="fixed-table-header">
-        <table>
+      <span class="badge" id="rowsSummaryBadge">Строк: 0</span>
+    </div>
+    <div class="section-body">
+      <div class="table-wrapper">
+        <table id="calcTable">
           <thead>
-            <tr>
-              <th>№</th>
-              <th>Раздел</th>
-              <th>Элемент</th>
-              <th>CFG базовое</th>
-              <th>k_ANDS</th>
-              <th>k_TEST</th>
-              <th>k_DOC</th>
-              <th>k_i</th>
-              <th>Кол-во</th>
-              <th>CFG итог TOTAL (без K_platform)</th>
-              <th>CFG фаза</th>
-              <th>ANDS фаза</th>
-              <th>TEST фаза</th>
-              <th>DOC фаза</th>
-              <th>Комментарий</th>
-              <th>Действия</th>
-            </tr>
+          <tr>
+            <th>№</th>
+            <th>Раздел</th>
+            <th>Элемент (код + имя)</th>
+            <th>CFG базовое</th>
+            <th>k_ANDS</th>
+            <th>k_TEST</th>
+            <th>k_DOC</th>
+            <th>k_i</th>
+            <th>Кол-во</th>
+            <th>CFG итог TOTAL<br/>(без K_platform)</th>
+            <th>CFG фаза</th>
+            <th>ANDS фаза</th>
+            <th>TEST фаза</th>
+            <th>DOC фаза</th>
+            <th>Комментарий</th>
+            <th>Действия</th>
+          </tr>
           </thead>
-          <tbody id="calc-body">
-            <tr><td class="table-empty" colspan="16">Загрузите методику, чтобы добавить элементы</td></tr>
+          <tbody id="calcTableBody">
+          <!-- Строки создаются динамически -->
           </tbody>
         </table>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="card" id="params-card">
-      <h2>Параметры расчёта</h2>
-      <div class="grid cols-2">
-        <div>
-          <label for="k-platform">K_platform</label>
-          <input id="k-platform" type="number" min="0" step="0.01" value="1" disabled />
-          <p class="muted" style="margin:6px 0 0;">Масштабирует итоговую трудоёмкость проекта.</p>
+  <!-- Параметры расчёта и методика -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2>Параметры расчёта</h2>
+        <small>Глобальный коэффициент платформы и исходные данные методики</small>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="field-row">
+        <div class="field" style="max-width:220px;">
+          <label for="kPlatformInput">K_platform</label>
+          <input id="kPlatformInput" type="number" step="0.01" value="1" disabled/>
         </div>
-        <div class="grid">
-          <label>Каталог методики</label>
-          <button class="btn-secondary" id="open-methodology" disabled>Исходные данные методики</button>
+        <div class="field" style="flex:2 1 260px;">
+          <label>Пояснение</label>
+          <div class="upload-hint">
+            Параметр K_platform масштабирует итоговую трудоёмкость проекта (TOTAL = Σ Eff_TOTAL_element × K_platform).<br/>
+            При K_platform = 1 итоговая трудоёмкость равна сумме элементных трудозатрат.
+          </div>
         </div>
       </div>
-    </section>
-
-    <section class="card" id="totals-card">
-      <h2>Итоги по проекту</h2>
-      <div class="totals" id="totals">
-        <div class="total-item"><span>CFG</span><strong id="total-cfg">0</strong></div>
-        <div class="total-item"><span>ANDS</span><strong id="total-ands">0</strong></div>
-        <div class="total-item"><span>TEST</span><strong id="total-test">0</strong></div>
-        <div class="total-item"><span>DOC</span><strong id="total-doc">0</strong></div>
-        <div class="total-item"><span>TOTAL (с K_platform)</span><strong id="total-full">0</strong></div>
+      <div class="controls-row">
+        <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
+        <span class="upload-hint">Открывает модальное окно со всем каталогом методики (строки Excel).</span>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="card" id="extra-card">
-      <div class="flex" style="justify-content: space-between; align-items: center;">
+  <!-- Итоги по проекту -->
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2>Итоги по проекту</h2>
+        <small>Сводные значения CFG, ANDS, TEST, DOC и TOTAL</small>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="totals-row">
+        <div class="total-card">
+          <div class="total-card-label">CFG (суммарно по элементам)</div>
+          <div class="total-card-value" id="totalCfg">0</div>
+        </div>
+        <div class="total-card">
+          <div class="total-card-label">ANDS</div>
+          <div class="total-card-value" id="totalAnds">0</div>
+        </div>
+        <div class="total-card">
+          <div class="total-card-label">TEST</div>
+          <div class="total-card-value" id="totalTest">0</div>
+        </div>
+        <div class="total-card">
+          <div class="total-card-label">DOC</div>
+          <div class="total-card-value" id="totalDoc">0</div>
+        </div>
+        <div class="total-card">
+          <div class="total-card-label">TOTAL (с учётом K_platform)</div>
+          <div class="total-card-value" id="totalOverall">0</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Дополнительные функции -->
+  <section class="section">
+    <div class="section-header">
+      <div>
         <h2>Дополнительные функции</h2>
-        <button class="btn-ghost" id="extra-toggle">Свернуть</button>
+        <small>Отображение, экспорт/импорт, снапшоты</small>
       </div>
-      <div id="extra-body" class="grid cols-3">
-        <div>
-          <h3>Отображение</h3>
-          <label class="flex" style="gap:8px; align-items:center;">
-            <input type="checkbox" id="toggle-codes" disabled /> Показывать коды элементов
+      <button type="button" class="section-toggle" id="toggleExtrasBtn">Свернуть</button>
+    </div>
+    <div class="section-body" id="extrasBody">
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <h3 style="font-size:13px;">Отображение</h3>
+          </div>
+        </div>
+        <div class="section-body">
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggleShowCodes" disabled/>
+            <span>Показывать коды элементов</span>
           </label>
         </div>
-        <div>
-          <h3>Экспорт / импорт</h3>
-          <div class="grid">
-            <button class="btn-secondary" id="export-summary" disabled>Экспорт сводного CSV</button>
-            <button class="btn-secondary" id="export-detailed" disabled>Экспорт детального CSV</button>
-            <button class="btn-secondary" id="save-snapshot" disabled>Сохранить снапшот (JSON)</button>
-            <input type="file" id="load-snapshot-input" accept="application/json" style="display:none;" />
-            <button class="btn-secondary" id="load-snapshot" disabled>Загрузить снапшот (JSON)</button>
+      </div>
+
+      <div class="section" style="margin-top:8px;">
+        <div class="section-header">
+          <div>
+            <h3 style="font-size:13px;">Экспорт / импорт</h3>
           </div>
         </div>
-        <div>
-          <h3>Служебные отметки</h3>
-          <p class="muted">Все функции становятся доступны после загрузки методики.</p>
+        <div class="section-body">
+          <div class="controls-row">
+            <div class="controls-group">
+              <span class="controls-group-label">CSV:</span>
+              <button type="button" class="button-secondary" id="exportSummaryCsvBtn" disabled>Экспорт сводного CSV</button>
+              <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт детального CSV</button>
+            </div>
+          </div>
+          <div class="controls-row">
+            <div class="controls-group">
+              <span class="controls-group-label">Снапшот:</span>
+              <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled>Сохранить снапшот (JSON)</button>
+              <button type="button" class="button-secondary" id="loadSnapshotBtn" disabled>Загрузить снапшот (JSON)</button>
+              <input type="file" id="snapshotFileInput" accept=".json" style="display:none;"/>
+            </div>
+          </div>
+          <div class="upload-hint" style="margin-top:6px;">
+            Снапшот JSON хранит реквизиты проекта, параметры расчёта, методику и все добавленные элементы. Его можно сохранить на диск и позже восстановить состояние калькулятора.
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
-
-  <div class="modal-overlay hidden" id="element-modal">
-    <div class="modal">
-      <header class="flex" style="justify-content: space-between; align-items:center;">
-        <h3 id="modal-title">Элемент раздела</h3>
-        <button class="modal-close" data-close="element-modal">✕</button>
-      </header>
-      <div class="grid cols-2">
-        <div>
-          <label>Раздел</label>
-          <select id="modal-group"></select>
-        </div>
-        <div>
-          <label>Тип элемента</label>
-          <select id="modal-element"></select>
-        </div>
-        <div>
-          <label>Название элемента</label>
-          <input type="text" id="modal-name" placeholder="Название" />
-        </div>
-        <div>
-          <label>Количество (шт.)</label>
-          <input type="number" id="modal-qty" min="1" value="1" />
-        </div>
-        <div>
-          <label>CFG базовое</label>
-          <input type="number" id="modal-cfg-base" step="0.01" />
-        </div>
-        <div>
-          <label>Параметр value (приращение)</label>
-          <input type="number" id="modal-value" min="0" step="0.01" value="0" />
-        </div>
-        <div>
-          <label>k_ANDS</label>
-          <input type="number" id="modal-k-ands" step="0.01" />
-        </div>
-        <div>
-          <label>k_TEST</label>
-          <input type="number" id="modal-k-test" step="0.01" />
-        </div>
-        <div>
-          <label>k_DOC</label>
-          <input type="number" id="modal-k-doc" step="0.01" />
-        </div>
-        <div>
-          <label>Уникальная логика</label>
-          <select id="modal-unique">
-            <option value="false">Нет</option>
-            <option value="true">Да</option>
-          </select>
-        </div>
-        <div>
-          <label>Системные расчёты</label>
-          <select id="modal-system">
-            <option value="false">Нет</option>
-            <option value="true">Да</option>
-          </select>
-        </div>
-        <div>
-          <label>Комментарий</label>
-          <textarea id="modal-comment" placeholder="Комментарий"></textarea>
-        </div>
-      </div>
-      <div class="divider"></div>
-      <div class="info-text" id="formula-help"></div>
-      <div class="error" id="modal-error"></div>
-      <div class="flex" style="justify-content: flex-end; margin-top: 12px; gap: 8px;">
-        <button class="btn-ghost" data-close="element-modal">Отмена</button>
-        <button class="btn-primary" id="modal-save">Сохранить</button>
       </div>
     </div>
-  </div>
+  </section>
+</div>
 
-  <div class="modal-overlay hidden" id="methodology-modal">
-    <div class="modal">
-      <header class="flex" style="justify-content: space-between; align-items:center;">
-        <h3>Исходные данные методики</h3>
-        <button class="modal-close" data-close="methodology-modal">✕</button>
-      </header>
-      <div id="methodology-content" class="grid"></div>
+<!-- Модальное окно: элемент раздела -->
+<div class="modal-backdrop" id="elementModalBackdrop">
+  <div class="modal" style="max-width:960px;">
+    <div class="modal-header">
+      <h3>Элемент раздела</h3>
+      <button type="button" class="button-ghost button-sm" id="closeElementModalBtn">Закрыть</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field">
+          <label for="elementSectionSelect">Раздел</label>
+          <select id="elementSectionSelect"></select>
+        </div>
+        <div class="field">
+          <label for="elementTypeSelect">Тип элемента (из методики)</label>
+          <select id="elementTypeSelect"></select>
+        </div>
+        <div class="field">
+          <label for="elementNameInput">Название элемента</label>
+          <input id="elementNameInput" type="text" placeholder="По умолчанию из методики"/>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="elementQtyInput">Количество (шт.)</label>
+          <input id="elementQtyInput" type="number" min="1" step="1" value="1"/>
+        </div>
+        <div class="field">
+          <label for="cfgBaseInput">CFG базовое</label>
+          <input id="cfgBaseInput" type="number" step="0.001"/>
+        </div>
+        <div class="field">
+          <label for="valueInput">Параметр value (приращение)</label>
+          <input id="valueInput" type="number" step="0.001" value="0"/>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="kAndsInput">k_ANDS</label>
+          <input id="kAndsInput" type="number" step="0.01"/>
+        </div>
+        <div class="field">
+          <label for="kTestInput">k_TEST</label>
+          <input id="kTestInput" type="number" step="0.01"/>
+        </div>
+        <div class="field">
+          <label for="kDocInput">k_DOC</label>
+          <input id="kDocInput" type="number" step="0.01"/>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Флаги</label>
+          <div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="flagUniqueLogicInput"/>
+              <span>Уникальная логика</span>
+            </label>
+          </div>
+          <div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="flagSystemCalcInput"/>
+              <span>Системные расчёты</span>
+            </label>
+          </div>
+        </div>
+        <div class="field" style="flex:2 1 260px;">
+          <label for="elementCommentInput">Комментарий</label>
+          <textarea id="elementCommentInput" placeholder="Обязательно для индивидуальных элементов (cfg_type = individual)"></textarea>
+        </div>
+      </div>
+
+      <div class="formula-block" id="formulaBlock">
+CFG_base определяется по cfg_type:
+  • fixed: CFG_base = cfg_fixed
+  • range: CFG_min ≤ CFG_base ≤ CFG_max (ввод пользователя)
+  • individual: CFG_base — произвольное значение пользователя (с ограничением cfg_custom_max, если задан)
+
+Наращивание трудоёмкости (scaling_type):
+  • additive:
+      if value ≤ base_value:
+          CFG_intermediate = CFG_base
+      else:
+          steps = ceil((value - base_value) / step)
+          CFG_intermediate = CFG_base + steps * delta_cfg
+
+  • multiplicative:
+      if value ≤ base_value:
+          CFG_intermediate = CFG_base
+      else:
+          steps = ceil((value - base_value) / step)
+          CFG_intermediate = CFG_base * (multiplier ^ steps)
+
+  • package:
+      packs = ceil(value / pack_size)
+      CFG_intermediate = CFG_base * packs
+
+  • none:
+      CFG_intermediate = CFG_base
+
+Применение флагов:
+  if has_unique_logic_flag:       CFG_intermediate *= 2
+  if has_system_calculations_flag: CFG_intermediate *= 2
+
+Итоговые значения:
+  Eff_CFG  = CFG_intermediate * Qty
+  Eff_ANDS = Eff_CFG * k_ANDS
+  Eff_TEST = Eff_CFG * k_TEST
+  Eff_DOC  = Eff_CFG * k_DOC
+  Eff_TOTAL_element = Eff_CFG + Eff_ANDS + Eff_TEST + Eff_DOC
+      </div>
+
+      <div class="warning-block" id="validationHintBlock">
+Для элементов с cfg_type = range требуйте, чтобы CFG базовое находилось в диапазоне [cfg_min; cfg_max].<br/>
+Для элементов с cfg_type = individual обязательно указывайте комментарий и, при наличии cfg_custom_max, не превышайте его.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="button-secondary" id="elementCancelBtn">Отмена</button>
+      <button type="button" class="button-primary" id="elementSaveBtn">Сохранить</button>
     </div>
   </div>
+</div>
 
-  <script src="./xlsx.full.min.js"></script>
-  <script>
-    const REQUIRED_COLUMNS = [
-      'group_code','group_name','element_code','element_name','complexity_score_min','complexity_score_max','area','category_label','cfg_type','cfg_min','cfg_max','cfg_fixed','ands_coeff','test_coeff','doc_coeff','scaling_type','base_value','base_unit','step','delta_cfg','multiplier','pack_size','has_unique_logic_flag','has_system_calculations_flag','is_individual','cfg_custom_max','short_description'
-    ];
+<!-- Модальное окно: методика -->
+<div class="modal-backdrop" id="methodologyModalBackdrop">
+  <div class="modal" style="max-width:1100px;">
+    <div class="modal-header">
+      <h3>Исходные данные методики (каталог из Excel)</h3>
+      <button type="button" class="button-ghost button-sm" id="closeMethodologyModalBtn">Закрыть</button>
+    </div>
+    <div class="modal-body">
+      <div class="upload-hint" style="margin-bottom:4px;">
+        Одна строка Excel = один элемент методики. Отображаются все обязательные поля.
+      </div>
+      <div class="table-wrapper" style="max-height:400px;">
+        <table id="methodologyTable">
+          <thead>
+          <tr>
+            <th>group_code</th>
+            <th>group_name</th>
+            <th>element_code</th>
+            <th>element_name</th>
+            <th>cfg_type</th>
+            <th>cfg_min</th>
+            <th>cfg_max</th>
+            <th>cfg_fixed</th>
+            <th>ands_coeff</th>
+            <th>test_coeff</th>
+            <th>doc_coeff</th>
+            <th>scaling_type</th>
+            <th>base_value</th>
+            <th>step</th>
+            <th>delta_cfg</th>
+            <th>multiplier</th>
+            <th>pack_size</th>
+            <th>has_unique_logic_flag</th>
+            <th>has_system_calculations_flag</th>
+            <th>is_individual</th>
+            <th>cfg_custom_max</th>
+          </tr>
+          </thead>
+          <tbody id="methodologyTableBody">
+          <!-- строки методики -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="button-secondary" id="methodologyOkBtn">Закрыть</button>
+    </div>
+  </div>
+</div>
 
-    const state = {
-      methodology: [],
-      groups: [],
-      rows: [],
-      editingId: null,
-      showCodes: false,
-      loaded: false,
-    };
+<!-- Подключение библиотеки xlsx (локальный файл в той же папке) -->
+<script src="xlsx.full.min.js"></script>
 
-    const elements = {
-      excelInput: document.getElementById('excel-input'),
-      loadExcelBtn: document.getElementById('load-excel'),
-      excelError: document.getElementById('excel-error'),
-      sectionContainer: document.getElementById('section-container'),
-      addRowBtn: document.getElementById('add-row-btn'),
-      calcBody: document.getElementById('calc-body'),
-      totals: {
-        cfg: document.getElementById('total-cfg'),
-        ands: document.getElementById('total-ands'),
-        test: document.getElementById('total-test'),
-        doc: document.getElementById('total-doc'),
-        full: document.getElementById('total-full'),
-      },
-      kPlatform: document.getElementById('k-platform'),
-      openMethodology: document.getElementById('open-methodology'),
-      toggleCodes: document.getElementById('toggle-codes'),
-      exportSummary: document.getElementById('export-summary'),
-      exportDetailed: document.getElementById('export-detailed'),
-      saveSnapshot: document.getElementById('save-snapshot'),
-      loadSnapshot: document.getElementById('load-snapshot'),
-      loadSnapshotInput: document.getElementById('load-snapshot-input'),
-      projectToggle: document.getElementById('project-toggle'),
-      projectBody: document.getElementById('project-body'),
-      extraToggle: document.getElementById('extra-toggle'),
-      extraBody: document.getElementById('extra-body'),
-    };
+<script>
+  // === Глобальное состояние ===
+  let methodologyRows = [];          // строки методики из Excel
+  let groupsMap = new Map();         // group_code -> { code, name, color, stats }
+  let calcItems = [];                // элементы в таблице расчётов
+  let hasMethodology = false;
+  let showCodes = false;
+  let editingItemId = null;
 
-    function setDisabled(disabled) {
-      elements.addRowBtn.disabled = disabled;
-      elements.kPlatform.disabled = disabled;
-      elements.openMethodology.disabled = disabled;
-      elements.toggleCodes.disabled = disabled;
-      elements.exportSummary.disabled = disabled;
-      elements.exportDetailed.disabled = disabled;
-      elements.saveSnapshot.disabled = disabled;
-      elements.loadSnapshot.disabled = disabled;
-      document.querySelectorAll('.fab-btn').forEach(btn => btn.disabled = disabled);
+  let nextItemId = 1;
+
+  const REQUIRED_COLUMNS = [
+    'group_code',
+    'group_name',
+    'element_code',
+    'element_name',
+    'complexity_score_min',
+    'complexity_score_max',
+    'area',
+    'category_label',
+    'cfg_type',
+    'cfg_min',
+    'cfg_max',
+    'cfg_fixed',
+    'ands_coeff',
+    'test_coeff',
+    'doc_coeff',
+    'scaling_type',
+    'base_value',
+    'base_unit',
+    'step',
+    'delta_cfg',
+    'multiplier',
+    'pack_size',
+    'has_unique_logic_flag',
+    'has_system_calculations_flag',
+    'is_individual',
+    'cfg_custom_max',
+    'short_description'
+  ];
+
+  // === Утилиты ===
+
+  function fmtNumber(value, digits = 2) {
+    if (!isFinite(value)) return '0';
+    return Number(value).toFixed(digits);
+  }
+
+  function randomColorFromCode(code) {
+    let hash = 0;
+    for (let i = 0; i < code.length; i++) {
+      hash = ((hash << 5) - hash) + code.charCodeAt(i);
+      hash |= 0;
     }
+    const h = (hash % 360 + 360) % 360;
+    const s = 60;
+    const l = 92;
+    return `linear-gradient(135deg, hsl(${h},${s}%,${l}%), #ffffff)`;
+  }
 
-    function showError(message) {
-      elements.excelError.textContent = message;
-      if (message) {
-        elements.excelError.classList.remove('hidden');
-      } else {
-        elements.excelError.classList.add('hidden');
+  function downloadFile(filename, content, mime = 'text/plain;charset=utf-8') {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function parseBoolFlag(v) {
+    if (typeof v === 'boolean') return v;
+    if (v == null) return false;
+    const s = String(v).trim().toLowerCase();
+    return s === '1' || s === 'true' || s === 'да' || s === 'yes' || s === 'y';
+  }
+
+  function safeNumber(v, def = 0) {
+    if (v === '' || v == null) return def;
+    const n = Number(v);
+    return isFinite(n) ? n : def;
+  }
+
+  // === Инициализация ===
+
+  document.addEventListener('DOMContentLoaded', () => {
+    bindGeneralControls();
+    resetState();
+  });
+
+  function bindGeneralControls() {
+    document.getElementById('toggleProjectMetaBtn').addEventListener('click', () => {
+      const body = document.getElementById('projectMetaBody');
+      const btn = document.getElementById('toggleProjectMetaBtn');
+      const hidden = body.classList.toggle('hidden');
+      btn.textContent = hidden ? 'Развернуть' : 'Свернуть';
+    });
+
+    document.getElementById('toggleExtrasBtn').addEventListener('click', () => {
+      const body = document.getElementById('extrasBody');
+      const btn = document.getElementById('toggleExtrasBtn');
+      const hidden = body.classList.toggle('hidden');
+      btn.textContent = hidden ? 'Развернуть' : 'Свернуть';
+    });
+
+    document.getElementById('excelInput').addEventListener('change', handleExcelUpload);
+
+    document.getElementById('toggleShowCodes').addEventListener('change', (e) => {
+      showCodes = e.target.checked;
+      renderCalcTable();
+    });
+
+    document.getElementById('exportSummaryCsvBtn').addEventListener('click', exportSummaryCsv);
+    document.getElementById('exportDetailCsvBtn').addEventListener('click', exportDetailCsv);
+
+    document.getElementById('saveSnapshotBtn').addEventListener('click', saveSnapshot);
+    document.getElementById('loadSnapshotBtn').addEventListener('click', () => {
+      document.getElementById('snapshotFileInput').click();
+    });
+    document.getElementById('snapshotFileInput').addEventListener('change', handleSnapshotUpload);
+
+    document.getElementById('openMethodologyBtn').addEventListener('click', () => {
+      openMethodologyModal();
+    });
+    document.getElementById('closeMethodologyModalBtn').addEventListener('click', () => {
+      closeMethodologyModal();
+    });
+    document.getElementById('methodologyOkBtn').addEventListener('click', () => {
+      closeMethodologyModal();
+    });
+
+    document.getElementById('kPlatformInput').addEventListener('input', () => {
+      recalcTotals();
+    });
+
+    document.getElementById('closeElementModalBtn').addEventListener('click', () => {
+      closeElementModal();
+    });
+    document.getElementById('elementCancelBtn').addEventListener('click', () => {
+      closeElementModal();
+    });
+    document.getElementById('elementSaveBtn').addEventListener('click', handleElementSave);
+
+    document.getElementById('elementSectionSelect').addEventListener('change', handleElementSectionChange);
+    document.getElementById('elementTypeSelect').addEventListener('change', handleElementTypeChange);
+  }
+
+  function resetState() {
+    methodologyRows = [];
+    groupsMap.clear();
+    calcItems = [];
+    hasMethodology = false;
+    showCodes = false;
+    editingItemId = null;
+    nextItemId = 1;
+
+    document.getElementById('methodStatusBadge').textContent = 'Методика не загружена';
+    document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: 0';
+    document.getElementById('rowsSummaryBadge').textContent = 'Строк: 0';
+
+    document.getElementById('sectionsContainer').innerHTML = '';
+    document.getElementById('noSectionsHint').classList.remove('hidden');
+    document.getElementById('calcTableBody').innerHTML = '';
+
+    document.getElementById('kPlatformInput').disabled = true;
+    document.getElementById('openMethodologyBtn').disabled = true;
+    document.getElementById('toggleShowCodes').disabled = true;
+    document.getElementById('exportSummaryCsvBtn').disabled = true;
+    document.getElementById('exportDetailCsvBtn').disabled = true;
+    document.getElementById('saveSnapshotBtn').disabled = true;
+    document.getElementById('loadSnapshotBtn').disabled = true;
+
+    setTotals(0, 0, 0, 0, 0);
+  }
+
+  // === Загрузка Excel ===
+
+  function handleExcelUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        if (!sheet) {
+          alert('Ошибка: в файле нет листов.');
+          return;
+        }
+        const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+        if (!rows || rows.length === 0) {
+          alert('Ошибка: лист пустой или не содержит данных.');
+          return;
+        }
+
+        const headerRow = rows[0];
+        const missing = REQUIRED_COLUMNS.filter(col => !(col in headerRow));
+        if (missing.length > 0) {
+          alert('Ошибка: в методике отсутствуют обязательные столбцы:\n' + missing.join(', '));
+          return;
+        }
+
+        methodologyRows = rows.map((r, idx) => ({
+          _index: idx,
+          group_code: String(r.group_code ?? '').trim(),
+          group_name: String(r.group_name ?? '').trim(),
+          element_code: String(r.element_code ?? '').trim(),
+          element_name: String(r.element_name ?? '').trim(),
+          complexity_score_min: safeNumber(r.complexity_score_min),
+          complexity_score_max: safeNumber(r.complexity_score_max),
+          area: r.area,
+          category_label: r.category_label,
+          cfg_type: String(r.cfg_type ?? '').trim().toLowerCase(),
+          cfg_min: safeNumber(r.cfg_min),
+          cfg_max: safeNumber(r.cfg_max),
+          cfg_fixed: safeNumber(r.cfg_fixed),
+          ands_coeff: safeNumber(r.ands_coeff),
+          test_coeff: safeNumber(r.test_coeff),
+          doc_coeff: safeNumber(r.doc_coeff),
+          scaling_type: String(r.scaling_type ?? '').trim().toLowerCase(),
+          base_value: safeNumber(r.base_value),
+          base_unit: r.base_unit,
+          step: safeNumber(r.step),
+          delta_cfg: safeNumber(r.delta_cfg),
+          multiplier: safeNumber(r.multiplier || 1),
+          pack_size: safeNumber(r.pack_size || 1),
+          has_unique_logic_flag: parseBoolFlag(r.has_unique_logic_flag),
+          has_system_calculations_flag: parseBoolFlag(r.has_system_calculations_flag),
+          is_individual: parseBoolFlag(r.is_individual),
+          cfg_custom_max: safeNumber(r.cfg_custom_max || 0),
+          short_description: String(r.short_description ?? '').trim()
+        }));
+
+        buildGroupsFromMethodology();
+        hasMethodology = true;
+        onMethodologyLoaded();
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка при чтении файла Excel: ' + err.message);
       }
-    }
+    };
+    reader.readAsArrayBuffer(file);
+  }
 
-    function readExcel(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          try {
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-            resolve(json);
-          } catch (err) {
-            reject(err);
+  function buildGroupsFromMethodology() {
+    groupsMap.clear();
+    methodologyRows.forEach(row => {
+      const code = row.group_code || 'NO_CODE';
+      const name = row.group_name || 'Без названия';
+      let group = groupsMap.get(code);
+      if (!group) {
+        group = {
+          code,
+          name,
+          color: randomColorFromCode(code),
+          rows: [],
+          stats: {
+            itemsCount: 0,
+            cfgBaseSum: 0,
+            totalWithoutK: 0
           }
         };
-        reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
-        reader.readAsArrayBuffer(file);
-      });
-    }
-
-    function validateColumns(rows) {
-      if (!rows.length) return 'Пустой файл методики.';
-      const columns = Object.keys(rows[0]);
-      const missing = REQUIRED_COLUMNS.filter(col => !columns.includes(col));
-      if (missing.length) {
-        return `Отсутствуют обязательные столбцы: ${missing.join(', ')}`;
+        groupsMap.set(code, group);
       }
-      return '';
-    }
+      group.rows.push(row);
+    });
+  }
 
-    function initFromMethodology(rows) {
-      state.methodology = rows;
-      state.groups = Array.from(new Set(rows.map(r => r.group_code))).map(code => {
-        const found = rows.find(r => r.group_code === code);
-        return { code, name: found ? found.group_name : code, color: getColor(code) };
-      });
-      state.rows = [];
-      state.loaded = true;
-      renderGroups();
-      renderTable();
-      renderTotals();
-      populateModalDefaults();
-      populateMethodologyModal();
-      setDisabled(false);
-      document.querySelector('#sections-card .tag')?.classList.add('hidden');
-    }
+  function onMethodologyLoaded() {
+    document.getElementById('methodStatusBadge').textContent = 'Методика загружена';
+    document.getElementById('kPlatformInput').disabled = false;
+    document.getElementById('openMethodologyBtn').disabled = false;
+    document.getElementById('toggleShowCodes').disabled = false;
+    document.getElementById('exportSummaryCsvBtn').disabled = false;
+    document.getElementById('exportDetailCsvBtn').disabled = false;
+    document.getElementById('saveSnapshotBtn').disabled = false;
+    document.getElementById('loadSnapshotBtn').disabled = false;
 
-    function getColor(key) {
-      const palette = ['#e0f2fe','#e9d5ff','#dcfce7','#fff7ed','#fce7f3','#f1f5f9'];
-      let hash = 0;
-      for (let i = 0; i < key.length; i++) hash += key.charCodeAt(i);
-      return palette[hash % palette.length];
-    }
+    renderSectionsCards();
+    renderMethodologyTable();
+  }
 
-    function renderGroups() {
-      elements.sectionContainer.innerHTML = '';
-      state.groups.forEach(group => {
-        const card = document.createElement('div');
-        card.className = 'section-card';
-        card.style.background = `linear-gradient(180deg, #fff, ${getColor(group.code)})`;
-        const stats = groupStats(group.code);
-        card.innerHTML = `
-          <h4>${group.name}</h4>
-          <div class="section-meta">
-            Строк: <strong>${stats.count}</strong><br/>
-            CFG база: <strong>${stats.base.toFixed(2)}</strong><br/>
-            Σ (без K_platform): <strong>${stats.total.toFixed(2)}</strong>
-          </div>
-          ${stats.count === 0 ? '<span class="badge">Пустой раздел</span>' : ''}
-          <div class="section-actions">
-            <label><input type="checkbox" data-hide="${group.code}"> Скрыть раздел</label>
-            <label><input type="checkbox" data-only="${group.code}"> Только этот</label>
-          </div>
-          <button class="btn-primary fab-btn" data-add="${group.code}">Добавить элемент</button>
-        `;
-        elements.sectionContainer.appendChild(card);
+  // === Карточки разделов ===
+
+  function renderSectionsCards() {
+    const container = document.getElementById('sectionsContainer');
+    container.innerHTML = '';
+
+    const groups = Array.from(groupsMap.values());
+    if (groups.length === 0) {
+      document.getElementById('noSectionsHint').classList.remove('hidden');
+      document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: 0';
+      return;
+    }
+    document.getElementById('noSectionsHint').classList.add('hidden');
+    document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: ' + groups.length;
+
+    groups.forEach(group => {
+      const card = document.createElement('div');
+      card.className = 'section-card';
+      card.dataset.groupCode = group.code;
+      card.style.backgroundImage = group.color;
+
+      const header = document.createElement('div');
+      header.className = 'section-card-header';
+
+      const title = document.createElement('div');
+      title.className = 'section-card-title';
+      title.textContent = group.name || group.code;
+      header.appendChild(title);
+
+      const meta = document.createElement('div');
+      meta.className = 'section-card-meta';
+      meta.innerHTML = `
+        <div>Строк методики: ${group.rows.length}</div>
+        <div>CFG база: <span data-role="cfg-base">0</span></div>
+        <div>Σ (без K_platform): <span data-role="sum-no-k">0</span></div>
+      `;
+      header.appendChild(meta);
+
+      const body = document.createElement('div');
+      body.className = 'section-card-body';
+
+      const flags = document.createElement('div');
+      flags.className = 'section-card-flags';
+      const hideId = `hide_${group.code}`;
+      const onlyId = `only_${group.code}`;
+      flags.innerHTML = `
+        <label>
+          <input type="checkbox" id="${hideId}"/>
+          <span>Скрыть раздел</span>
+        </label>
+        <label>
+          <input type="checkbox" id="${onlyId}"/>
+          <span>Только этот</span>
+        </label>
+      `;
+      const empty = document.createElement('div');
+      empty.className = 'empty-badge';
+      empty.textContent = 'Пустой раздел';
+      empty.dataset.role = 'empty-badge';
+      flags.appendChild(empty);
+
+      body.appendChild(flags);
+
+      const actions = document.createElement('div');
+      actions.className = 'section-card-actions';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'button-primary button-sm';
+      btn.textContent = 'Добавить элемент';
+      btn.disabled = !hasMethodology;
+      btn.addEventListener('click', () => {
+        openElementModalForGroup(group.code);
       });
-      elements.sectionContainer.querySelectorAll('[data-add]').forEach(btn => {
-        btn.addEventListener('click', () => openElementModal(btn.dataset.add));
+      actions.appendChild(btn);
+      body.appendChild(actions);
+
+      card.appendChild(header);
+      card.appendChild(body);
+
+      container.appendChild(card);
+
+      const hideCheckbox = document.getElementById(hideId);
+      const onlyCheckbox = document.getElementById(onlyId);
+
+      hideCheckbox.addEventListener('change', () => {
+        const hidden = hideCheckbox.checked;
+        card.style.display = hidden ? 'none' : 'flex';
+        if (hidden) {
+          onlyCheckbox.checked = false;
+        }
       });
-      elements.sectionContainer.querySelectorAll('[data-hide]').forEach(chk => {
-        chk.addEventListener('change', () => {
-          const code = chk.dataset.hide;
-          const rows = elements.calcBody.querySelectorAll(`tr[data-group="${code}"]`);
-          rows.forEach(r => r.style.display = chk.checked ? 'none' : '');
+
+      onlyCheckbox.addEventListener('change', () => {
+        const onlyChecked = onlyCheckbox.checked;
+        const allCards = container.querySelectorAll('.section-card');
+        allCards.forEach(c => {
+          const gc = c.dataset.groupCode;
+          if (gc === group.code) {
+            c.style.display = 'flex';
+          } else {
+            c.style.display = onlyChecked ? 'none' : 'flex';
+          }
         });
-      });
-      elements.sectionContainer.querySelectorAll('[data-only]').forEach(chk => {
-        chk.addEventListener('change', () => {
-          const code = chk.dataset.only;
-          const rows = elements.calcBody.querySelectorAll('tr[data-group]');
-          rows.forEach(r => {
-            if (chk.checked) {
-              r.style.display = r.dataset.group === code ? '' : 'none';
-            } else {
-              r.style.display = '';
-            }
+        if (!onlyChecked) {
+          // сброс всех чекбоксов "Только этот"
+          container.querySelectorAll('input[id^="only_"]').forEach(inp => {
+            if (inp.id !== onlyId) inp.checked = false;
           });
-          elements.sectionContainer.querySelectorAll('[data-only]').forEach(other => {
-            if (other !== chk) other.checked = false;
-          });
-        });
+        }
       });
-    }
+    });
 
-    function groupStats(code) {
-      const rows = state.rows.filter(r => r.group_code === code);
-      const base = rows.reduce((s, r) => s + (Number(r.cfg_base) || 0), 0);
-      const total = rows.reduce((s, r) => s + (r.eff_total || 0), 0);
-      return { count: rows.length, base, total };
-    }
+    recalcGroupStats();
+  }
 
-    function populateModalDefaults() {
-      const groupSelect = document.getElementById('modal-group');
-      groupSelect.innerHTML = state.groups.map(g => `<option value="${g.code}">${g.name}</option>`).join('');
-      populateElementsForGroup(groupSelect.value);
-    }
+  function recalcGroupStats() {
+    // обнулить
+    groupsMap.forEach(group => {
+      group.stats.itemsCount = 0;
+      group.stats.cfgBaseSum = 0;
+      group.stats.totalWithoutK = 0;
+    });
 
-    function populateElementsForGroup(groupCode) {
-      const elementSelect = document.getElementById('modal-element');
-      const options = state.methodology.filter(r => r.group_code === groupCode);
-      elementSelect.innerHTML = options.map(opt => `<option value="${opt.element_code}">${opt.element_code} — ${opt.element_name}</option>`).join('');
-      updateModalByElement(elementSelect.value);
-    }
+    calcItems.forEach(item => {
+      const group = groupsMap.get(item.group_code);
+      if (!group) return;
+      group.stats.itemsCount++;
+      group.stats.cfgBaseSum += item.cfg_base || 0;
+      group.stats.totalWithoutK += item.eff_total || 0;
+    });
 
-    function updateModalByElement(code) {
-      const element = state.methodology.find(r => r.element_code === code);
-      if (!element) return;
-      document.getElementById('modal-name').value = element.element_name;
-      document.getElementById('modal-cfg-base').value = element.cfg_type === 'fixed' ? element.cfg_fixed : element.cfg_min;
-      document.getElementById('modal-k-ands').value = element.ands_coeff;
-      document.getElementById('modal-k-test').value = element.test_coeff;
-      document.getElementById('modal-k-doc').value = element.doc_coeff;
-      document.getElementById('modal-unique').value = String(!!element.has_unique_logic_flag);
-      document.getElementById('modal-system').value = String(!!element.has_system_calculations_flag);
-      document.getElementById('formula-help').textContent = buildFormulaText(element);
-    }
-
-    function buildFormulaText(element) {
-      const scaling = {
-        additive: 'additive: CFG_base + steps * delta_cfg',
-        multiplicative: 'multiplicative: CFG_base * (multiplier ^ steps)',
-        package: 'package: CFG_base * количество пакетов',
-        none: 'none: CFG_base без изменений'
-      };
-      return `CFG_type: ${element.cfg_type}. Scaling: ${scaling[element.scaling_type] || 'n/a'}. База ${element.cfg_min}..${element.cfg_max}. Требуется комментарий для individual.`;
-    }
-
-    function openElementModal(groupCode, rowId = null) {
-      state.editingId = rowId;
-      document.getElementById('modal-title').textContent = rowId ? 'Редактировать элемент' : 'Новый элемент';
-      document.getElementById('modal-error').textContent = '';
-      document.getElementById('modal-comment').value = '';
-      document.getElementById('modal-qty').value = 1;
-      document.getElementById('modal-value').value = 0;
-      const groupSelect = document.getElementById('modal-group');
-      groupSelect.value = groupCode || state.groups[0]?.code;
-      populateElementsForGroup(groupSelect.value);
-      if (rowId) fillModalForEdit(rowId);
-      document.getElementById('element-modal').classList.remove('hidden');
-    }
-
-    function fillModalForEdit(id) {
-      const row = state.rows.find(r => r.id === id);
-      if (!row) return;
-      document.getElementById('modal-group').value = row.group_code;
-      populateElementsForGroup(row.group_code);
-      document.getElementById('modal-element').value = row.element_code;
-      updateModalByElement(row.element_code);
-      document.getElementById('modal-name').value = row.element_name;
-      document.getElementById('modal-cfg-base').value = row.cfg_base;
-      document.getElementById('modal-qty').value = row.qty;
-      document.getElementById('modal-value').value = row.value;
-      document.getElementById('modal-k-ands').value = row.k_ands;
-      document.getElementById('modal-k-test').value = row.k_test;
-      document.getElementById('modal-k-doc').value = row.k_doc;
-      document.getElementById('modal-unique').value = String(row.has_unique_logic_flag);
-      document.getElementById('modal-system').value = String(row.has_system_calculations_flag);
-      document.getElementById('modal-comment').value = row.comment || '';
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function getElementByCode(code) {
-      return state.methodology.find(r => r.element_code === code);
-    }
-
-    function validateModal(element) {
-      const qty = Number(document.getElementById('modal-qty').value);
-      const cfgBase = Number(document.getElementById('modal-cfg-base').value);
-      const value = Number(document.getElementById('modal-value').value);
-      const comment = document.getElementById('modal-comment').value.trim();
-
-      if (!Number.isFinite(qty) || qty <= 0) return 'Количество должно быть больше 0';
-      if (!Number.isFinite(cfgBase)) return 'CFG базовое должно быть числом';
-      if (['additive','multiplicative','package'].includes(element.scaling_type) && value <= 0) return 'Value должен быть > 0 для выбранного scaling';
-
-      if (element.cfg_type === 'range') {
-        const min = Number(element.cfg_min);
-        const max = Number(element.cfg_max);
-        if (cfgBase < min || cfgBase > max) return `CFG должно быть в диапазоне ${min}..${max}`;
+    const cards = document.querySelectorAll('.section-card');
+    cards.forEach(card => {
+      const code = card.dataset.groupCode;
+      const group = groupsMap.get(code);
+      if (!group) return;
+      const cfgSpan = card.querySelector('[data-role="cfg-base"]');
+      const sumSpan = card.querySelector('[data-role="sum-no-k"]');
+      const emptyBadge = card.querySelector('[data-role="empty-badge"]');
+      if (cfgSpan) cfgSpan.textContent = fmtNumber(group.stats.cfgBaseSum, 2);
+      if (sumSpan) sumSpan.textContent = fmtNumber(group.stats.totalWithoutK, 2);
+      if (emptyBadge) {
+        emptyBadge.style.display = group.stats.itemsCount === 0 ? 'inline-block' : 'none';
       }
-      if (element.cfg_type === 'individual') {
-        if (!comment) return 'Комментарий обязателен для индивидуальных элементов';
-        const customMax = Number(element.cfg_custom_max);
-        if (Number.isFinite(customMax) && customMax > 0 && cfgBase > customMax) return `CFG не может превышать ${customMax}`;
-      }
-      if (!Number.isFinite(value)) return 'Value должно быть числом';
-      return '';
+    });
+  }
+
+  // === Модальное окно элемента ===
+
+  function openElementModalForGroup(groupCode) {
+    if (!hasMethodology) {
+      alert('Сначала загрузите Excel-методику.');
+      return;
     }
+    editingItemId = null;
+    const group = groupsMap.get(groupCode);
+    const sectionSelect = document.getElementById('elementSectionSelect');
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const nameInput = document.getElementById('elementNameInput');
+    const qtyInput = document.getElementById('elementQtyInput');
+    const cfgBaseInput = document.getElementById('cfgBaseInput');
+    const valueInput = document.getElementById('valueInput');
+    const kAndsInput = document.getElementById('kAndsInput');
+    const kTestInput = document.getElementById('kTestInput');
+    const kDocInput = document.getElementById('kDocInput');
+    const flagUnique = document.getElementById('flagUniqueLogicInput');
+    const flagSystem = document.getElementById('flagSystemCalcInput');
+    const commentInput = document.getElementById('elementCommentInput');
 
-    function saveModal() {
-      const groupCode = document.getElementById('modal-group').value;
-      const elementCode = document.getElementById('modal-element').value;
-      const methodologyItem = getElementByCode(elementCode);
-      if (!methodologyItem) return;
-      const error = validateModal(methodologyItem);
-      const errorBox = document.getElementById('modal-error');
-      if (error) { errorBox.textContent = error; return; }
-      errorBox.textContent = '';
+    // заполнить список разделов
+    sectionSelect.innerHTML = '';
+    Array.from(groupsMap.values()).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.code;
+      opt.textContent = g.name || g.code;
+      if (g.code === groupCode) opt.selected = true;
+      sectionSelect.appendChild(opt);
+    });
 
-      const data = {
-        id: state.editingId || crypto.randomUUID(),
-        group_code: groupCode,
-        group_name: methodologyItem.group_name,
-        element_code: elementCode,
-        element_name: document.getElementById('modal-name').value,
-        cfg_type: methodologyItem.cfg_type,
-        cfg_min: Number(methodologyItem.cfg_min),
-        cfg_max: Number(methodologyItem.cfg_max),
-        cfg_fixed: Number(methodologyItem.cfg_fixed),
-        cfg_base: Number(document.getElementById('modal-cfg-base').value),
-        value: Number(document.getElementById('modal-value').value),
-        scaling_type: methodologyItem.scaling_type,
-        base_value: Number(methodologyItem.base_value),
-        step: Number(methodologyItem.step),
-        delta_cfg: Number(methodologyItem.delta_cfg),
-        multiplier: Number(methodologyItem.multiplier || 1),
-        pack_size: Number(methodologyItem.pack_size || 1),
-        qty: Number(document.getElementById('modal-qty').value),
-        k_ands: Number(document.getElementById('modal-k-ands').value),
-        k_test: Number(document.getElementById('modal-k-test').value),
-        k_doc: Number(document.getElementById('modal-k-doc').value),
-        has_unique_logic_flag: document.getElementById('modal-unique').value === 'true',
-        has_system_calculations_flag: document.getElementById('modal-system').value === 'true',
-        comment: document.getElementById('modal-comment').value.trim(),
-      };
-      const computed = computeRow(data, methodologyItem);
-      Object.assign(data, computed);
+    // заполнить список типов элементов для выбранного раздела
+    fillElementTypesForGroup(groupCode);
 
-      if (state.editingId) {
-        const idx = state.rows.findIndex(r => r.id === state.editingId);
-        if (idx !== -1) state.rows[idx] = data;
+    qtyInput.value = '1';
+    cfgBaseInput.value = '';
+    valueInput.value = '0';
+    kAndsInput.value = '';
+    kTestInput.value = '';
+    kDocInput.value = '';
+    flagUnique.checked = false;
+    flagSystem.checked = false;
+    commentInput.value = '';
+    nameInput.value = '';
+
+    document.getElementById('elementModalBackdrop').style.display = 'flex';
+  }
+
+  function handleElementSectionChange() {
+    const sectionSelect = document.getElementById('elementSectionSelect');
+    const groupCode = sectionSelect.value;
+    fillElementTypesForGroup(groupCode);
+  }
+
+  function fillElementTypesForGroup(groupCode) {
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const nameInput = document.getElementById('elementNameInput');
+    const cfgBaseInput = document.getElementById('cfgBaseInput');
+    const valueInput = document.getElementById('valueInput');
+    const kAndsInput = document.getElementById('kAndsInput');
+    const kTestInput = document.getElementById('kTestInput');
+    const kDocInput = document.getElementById('kDocInput');
+    const flagUnique = document.getElementById('flagUniqueLogicInput');
+    const flagSystem = document.getElementById('flagSystemCalcInput');
+
+    typeSelect.innerHTML = '';
+    const rows = methodologyRows.filter(r => (r.group_code || 'NO_CODE') === groupCode);
+    rows.forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = String(row._index);
+      opt.textContent = `${row.element_code || ''} — ${row.element_name || ''}`.trim();
+      typeSelect.appendChild(opt);
+    });
+
+    if (rows.length > 0) {
+      const row = rows[0];
+      nameInput.value = row.element_name || '';
+      const cfgType = row.cfg_type;
+      if (cfgType === 'fixed') {
+        cfgBaseInput.value = row.cfg_fixed || 0;
+        cfgBaseInput.disabled = true;
       } else {
-        state.rows.push(data);
+        cfgBaseInput.disabled = false;
+        cfgBaseInput.value = cfgType === 'range' ? row.cfg_min || 0 : '';
       }
-      state.editingId = null;
-      renderTable();
-      renderTotals();
-      renderGroups();
-      closeModal('element-modal');
+      valueInput.value = row.base_value || 0;
+      kAndsInput.value = row.ands_coeff || 0;
+      kTestInput.value = row.test_coeff || 0;
+      kDocInput.value = row.doc_coeff || 0;
+      flagUnique.checked = row.has_unique_logic_flag;
+      flagSystem.checked = row.has_system_calculations_flag;
+    } else {
+      nameInput.value = '';
+      cfgBaseInput.value = '';
+      valueInput.value = '0';
+      kAndsInput.value = '';
+      kTestInput.value = '';
+      kDocInput.value = '';
+      flagUnique.checked = false;
+      flagSystem.checked = false;
+    }
+  }
+
+  function handleElementTypeChange() {
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const idx = Number(typeSelect.value);
+    const row = methodologyRows.find(r => r._index === idx);
+    if (!row) return;
+
+    const nameInput = document.getElementById('elementNameInput');
+    const cfgBaseInput = document.getElementById('cfgBaseInput');
+    const valueInput = document.getElementById('valueInput');
+    const kAndsInput = document.getElementById('kAndsInput');
+    const kTestInput = document.getElementById('kTestInput');
+    const kDocInput = document.getElementById('kDocInput');
+    const flagUnique = document.getElementById('flagUniqueLogicInput');
+    const flagSystem = document.getElementById('flagSystemCalcInput');
+
+    nameInput.value = row.element_name || '';
+    const cfgType = row.cfg_type;
+    if (cfgType === 'fixed') {
+      cfgBaseInput.value = row.cfg_fixed || 0;
+      cfgBaseInput.disabled = true;
+    } else {
+      cfgBaseInput.disabled = false;
+      cfgBaseInput.value = cfgType === 'range' ? row.cfg_min || 0 : '';
+    }
+    valueInput.value = row.base_value || 0;
+    kAndsInput.value = row.ands_coeff || 0;
+    kTestInput.value = row.test_coeff || 0;
+    kDocInput.value = row.doc_coeff || 0;
+    flagUnique.checked = row.has_unique_logic_flag;
+    flagSystem.checked = row.has_system_calculations_flag;
+  }
+
+  function closeElementModal() {
+    document.getElementById('elementModalBackdrop').style.display = 'none';
+    editingItemId = null;
+  }
+
+  function handleElementSave() {
+    const sectionSelect = document.getElementById('elementSectionSelect');
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const nameInput = document.getElementById('elementNameInput');
+    const qtyInput = document.getElementById('elementQtyInput');
+    const cfgBaseInput = document.getElementById('cfgBaseInput');
+    const valueInput = document.getElementById('valueInput');
+    const kAndsInput = document.getElementById('kAndsInput');
+    const kTestInput = document.getElementById('kTestInput');
+    const kDocInput = document.getElementById('kDocInput');
+    const flagUnique = document.getElementById('flagUniqueLogicInput');
+    const flagSystem = document.getElementById('flagSystemCalcInput');
+    const commentInput = document.getElementById('elementCommentInput');
+
+    const groupCode = sectionSelect.value;
+    const group = groupsMap.get(groupCode);
+    if (!group) {
+      alert('Ошибка: не выбран раздел.');
+      return;
     }
 
-    function computeRow(row, element) {
-      let cfgBase = row.cfg_base;
-      if (element.cfg_type === 'fixed') cfgBase = Number(element.cfg_fixed);
-      if (element.cfg_type === 'range') cfgBase = row.cfg_base;
-      if (element.cfg_type === 'individual') cfgBase = row.cfg_base;
-
-      let cfgIntermediate = cfgBase;
-      const value = row.value;
-      const baseValue = Number(element.base_value);
-      const step = Number(element.step || 1);
-      const delta = Number(element.delta_cfg || 0);
-      const multiplier = Number(element.multiplier || 1);
-      const packSize = Number(element.pack_size || 1);
-
-      if (element.scaling_type === 'additive') {
-        if (value > baseValue) {
-          const steps = Math.ceil((value - baseValue) / step);
-          cfgIntermediate = cfgBase + steps * delta;
-        }
-      } else if (element.scaling_type === 'multiplicative') {
-        if (value > baseValue) {
-          const steps = Math.ceil((value - baseValue) / step);
-          cfgIntermediate = cfgBase * Math.pow(multiplier, steps);
-        }
-      } else if (element.scaling_type === 'package') {
-        const packs = Math.ceil(value / packSize);
-        cfgIntermediate = cfgBase * packs;
-      }
-
-      if (row.has_unique_logic_flag) cfgIntermediate *= 2;
-      if (row.has_system_calculations_flag) cfgIntermediate *= 2;
-
-      const effCfg = cfgIntermediate * row.qty;
-      const effAnds = effCfg * row.k_ands;
-      const effTest = effCfg * row.k_test;
-      const effDoc = effCfg * row.k_doc;
-      const effTotal = effCfg + effAnds + effTest + effDoc;
-
-      return {
-        cfg_intermediate: cfgIntermediate,
-        eff_cfg: effCfg,
-        eff_ands: effAnds,
-        eff_test: effTest,
-        eff_doc: effDoc,
-        eff_total: effTotal,
-        k_i: row.k_ands + row.k_test + row.k_doc + 1,
-      };
+    const rowIndex = Number(typeSelect.value);
+    const methodRow = methodologyRows.find(r => r._index === rowIndex);
+    if (!methodRow) {
+      alert('Ошибка: не выбран тип элемента.');
+      return;
     }
 
-    function renderTable() {
-      elements.calcBody.innerHTML = '';
-      if (!state.rows.length) {
-        elements.calcBody.innerHTML = '<tr><td class="table-empty" colspan="16">Нет данных. Добавьте элементы.</td></tr>';
+    const qty = safeNumber(qtyInput.value, 0);
+    if (qty <= 0) {
+      alert('Ошибка: количество должно быть положительным.');
+      return;
+    }
+
+    const cfgType = methodRow.cfg_type;
+    let cfgBase = safeNumber(cfgBaseInput.value, NaN);
+    if (cfgType === 'fixed') {
+      cfgBase = methodRow.cfg_fixed || 0;
+    } else if (cfgType === 'range') {
+      if (!isFinite(cfgBase)) {
+        alert('Ошибка: CFG базовое должно быть числом.');
         return;
       }
-      state.rows.forEach((row, idx) => {
-        const tr = document.createElement('tr');
-        tr.dataset.group = row.group_code;
-        const name = state.showCodes ? `${row.element_code}: ${row.element_name}` : row.element_name;
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td>${row.group_name}</td>
-          <td>${name}</td>
-          <td>${row.cfg_intermediate?.toFixed(2) ?? row.cfg_base.toFixed(2)}</td>
-          <td>${row.k_ands}</td>
-          <td>${row.k_test}</td>
-          <td>${row.k_doc}</td>
-          <td>${(row.k_i || 0).toFixed(2)}</td>
-          <td>${row.qty}</td>
-          <td>${row.eff_total.toFixed(2)}</td>
-          <td>${row.eff_cfg.toFixed(2)}</td>
-          <td>${row.eff_ands.toFixed(2)}</td>
-          <td>${row.eff_test.toFixed(2)}</td>
-          <td>${row.eff_doc.toFixed(2)}</td>
-          <td>${row.comment || ''}</td>
-          <td class="actions">
-            <button class="btn-ghost" data-edit="${row.id}">Ред.</button>
-            <button class="btn-danger" data-del="${row.id}">Удалить</button>
-          </td>
-        `;
-        elements.calcBody.appendChild(tr);
-      });
-      elements.calcBody.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openElementModal(null, btn.dataset.edit)));
-      elements.calcBody.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteRow(btn.dataset.del)));
+      const min = methodRow.cfg_min;
+      const max = methodRow.cfg_max;
+      if (cfgBase < min || cfgBase > max) {
+        alert('CFG базовое для типа range должно быть в диапазоне [' + min + '; ' + max + '].');
+        return;
+      }
+    } else if (cfgType === 'individual') {
+      if (!isFinite(cfgBase)) {
+        alert('Ошибка: CFG базовое (individual) должно быть числом.');
+        return;
+      }
+      const customMax = methodRow.cfg_custom_max || 0;
+      if (customMax > 0 && cfgBase > customMax) {
+        alert('CFG базовое (individual) не должно превышать cfg_custom_max = ' + customMax);
+        return;
+      }
+      const comment = (commentInput.value || '').trim();
+      if (!comment) {
+        alert('Для элементов с cfg_type = individual комментарий обязателен.');
+        return;
+      }
     }
 
-    function deleteRow(id) {
-      state.rows = state.rows.filter(r => r.id !== id);
-      renderTable();
-      renderTotals();
-      renderGroups();
+    let value = safeNumber(valueInput.value, 0);
+    const scalingType = methodRow.scaling_type || 'none';
+    if ((scalingType === 'additive' || scalingType === 'multiplicative' || scalingType === 'package') && value <= 0) {
+      if (!confirm('Параметр value ≤ 0 при типе scaling = ' + scalingType + '. Продолжить?')) {
+        return;
+      }
     }
 
-    function renderTotals() {
-      const sumCfg = state.rows.reduce((s, r) => s + (r.eff_cfg || 0), 0);
-      const sumAnds = state.rows.reduce((s, r) => s + (r.eff_ands || 0), 0);
-      const sumTest = state.rows.reduce((s, r) => s + (r.eff_test || 0), 0);
-      const sumDoc = state.rows.reduce((s, r) => s + (r.eff_doc || 0), 0);
-      const k = Number(elements.kPlatform.value) || 1;
-      const total = (sumCfg + sumAnds + sumTest + sumDoc) * k;
-      elements.totals.cfg.textContent = sumCfg.toFixed(2);
-      elements.totals.ands.textContent = sumAnds.toFixed(2);
-      elements.totals.test.textContent = sumTest.toFixed(2);
-      elements.totals.doc.textContent = sumDoc.toFixed(2);
-      elements.totals.full.textContent = total.toFixed(2);
-    }
-
-    function populateMethodologyModal() {
-      const container = document.getElementById('methodology-content');
-      container.innerHTML = '';
-      state.groups.forEach(group => {
-        const wrap = document.createElement('div');
-        wrap.className = 'info-text';
-        wrap.innerHTML = `<strong>${group.code} — ${group.name}</strong><div class="divider"></div>`;
-        const list = state.methodology.filter(m => m.group_code === group.code).map(m => `<div class="chip">${m.element_code}: ${m.element_name}</div>`).join('');
-        wrap.innerHTML += list || '<span class="muted">Пусто</span>';
-        container.appendChild(wrap);
-      });
-    }
-
-    function exportCSV(detailed = false) {
-      const header = detailed ? ['№','Раздел','Код','Название','CFG итог','ANDS','TEST','DOC','TOTAL','Комментарий'] : ['Раздел','TOTAL'];
-      let rows = [];
-      if (detailed) {
-        rows = state.rows.map((r, i) => [i+1, r.group_name, r.element_code, r.element_name, r.eff_cfg.toFixed(2), r.eff_ands.toFixed(2), r.eff_test.toFixed(2), r.eff_doc.toFixed(2), r.eff_total.toFixed(2), r.comment || '']);
+    let cfgIntermediate = cfgBase;
+    if (scalingType === 'additive') {
+      if (value <= methodRow.base_value) {
+        cfgIntermediate = cfgBase;
       } else {
-        const grouped = {};
-        state.rows.forEach(r => {
-          grouped[r.group_name] = (grouped[r.group_name] || 0) + r.eff_total;
-        });
-        rows = Object.entries(grouped).map(([group, total]) => [group, total.toFixed(2)]);
+        const steps = Math.ceil((value - methodRow.base_value) / (methodRow.step || 1));
+        cfgIntermediate = cfgBase + steps * (methodRow.delta_cfg || 0);
       }
-      const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-      downloadFile(csv, detailed ? 'detailed.csv' : 'summary.csv', 'text/csv');
+    } else if (scalingType === 'multiplicative') {
+      if (value <= methodRow.base_value) {
+        cfgIntermediate = cfgBase;
+      } else {
+        const steps = Math.ceil((value - methodRow.base_value) / (methodRow.step || 1));
+        cfgIntermediate = cfgBase * Math.pow(methodRow.multiplier || 1, steps);
+      }
+    } else if (scalingType === 'package') {
+      const packs = Math.ceil(value / (methodRow.pack_size || 1));
+      cfgIntermediate = cfgBase * packs;
+    } else {
+      cfgIntermediate = cfgBase;
     }
 
-    function saveSnapshotFile() {
-      const snapshot = {
-        project: {
-          name: document.getElementById('project-name').value,
-          date: document.getElementById('project-date').value,
-          version: document.getElementById('project-version').value,
-          owner: document.getElementById('project-owner').value,
-          client: document.getElementById('project-client').value,
-        },
-        k_platform: elements.kPlatform.value,
-        methodology: state.methodology,
-        rows: state.rows,
-      };
-      downloadFile(JSON.stringify(snapshot, null, 2), 'snapshot.json', 'application/json');
+    let uniqueFlag = flagUnique.checked || methodRow.has_unique_logic_flag;
+    let systemFlag = flagSystem.checked || methodRow.has_system_calculations_flag;
+    if (uniqueFlag) cfgIntermediate *= 2;
+    if (systemFlag) cfgIntermediate *= 2;
+
+    const effCfg = cfgIntermediate * qty;
+    const kAnds = safeNumber(kAndsInput.value, methodRow.ands_coeff || 0);
+    const kTest = safeNumber(kTestInput.value, methodRow.test_coeff || 0);
+    const kDoc = safeNumber(kDocInput.value, methodRow.doc_coeff || 0);
+
+    const effAnds = effCfg * kAnds;
+    const effTest = effCfg * kTest;
+    const effDoc = effCfg * kDoc;
+    const effTotal = effCfg + effAnds + effTest + effDoc;
+
+    const item = {
+      id: editingItemId != null ? editingItemId : nextItemId++,
+      group_code: group.code,
+      group_name: group.name,
+      element_code: methodRow.element_code,
+      element_name: nameInput.value || methodRow.element_name,
+      cfg_type: cfgType,
+      scaling_type: scalingType,
+      qty,
+      cfg_base: cfgBase,
+      value,
+      k_ands: kAnds,
+      k_test: kTest,
+      k_doc: kDoc,
+      cfg_intermediate: cfgIntermediate,
+      eff_cfg: effCfg,
+      eff_ands: effAnds,
+      eff_test: effTest,
+      eff_doc: effDoc,
+      eff_total: effTotal,
+      has_unique_logic_flag: uniqueFlag,
+      has_system_calculations_flag: systemFlag,
+      is_individual: methodRow.is_individual,
+      comment: commentInput.value || ''
+    };
+
+    if (editingItemId != null) {
+      const idx = calcItems.findIndex(x => x.id === editingItemId);
+      if (idx >= 0) calcItems[idx] = item;
+    } else {
+      calcItems.push(item);
     }
 
-    function loadSnapshotFile(file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const snapshot = JSON.parse(e.target.result);
-          if (!snapshot.methodology || !Array.isArray(snapshot.methodology)) throw new Error('Некорректный снапшот');
-          state.methodology = snapshot.methodology;
-          state.groups = Array.from(new Set(state.methodology.map(r => r.group_code))).map(code => {
-            const found = state.methodology.find(r => r.group_code === code);
-            return { code, name: found ? found.group_name : code, color: getColor(code) };
-          });
-          state.rows = snapshot.rows || [];
-          state.loaded = true;
-          document.getElementById('project-name').value = snapshot.project?.name || '';
-          document.getElementById('project-date').value = snapshot.project?.date || '';
-          document.getElementById('project-version').value = snapshot.project?.version || '';
-          document.getElementById('project-owner').value = snapshot.project?.owner || '';
-          document.getElementById('project-client').value = snapshot.project?.client || '';
-          elements.kPlatform.value = snapshot.k_platform || 1;
-          setDisabled(false);
-          renderGroups();
-          renderTable();
-          renderTotals();
-          populateMethodologyModal();
-          document.querySelector('#sections-card .tag')?.classList.add('hidden');
-        } catch (err) {
-          alert('Ошибка загрузки снапшота: ' + err.message);
+    editingItemId = null;
+    closeElementModal();
+    renderCalcTable();
+    recalcGroupStats();
+    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
+  }
+
+  function openElementModalForEdit(itemId) {
+    const item = calcItems.find(x => x.id === itemId);
+    if (!item) return;
+    editingItemId = item.id;
+
+    const sectionSelect = document.getElementById('elementSectionSelect');
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const nameInput = document.getElementById('elementNameInput');
+    const qtyInput = document.getElementById('elementQtyInput');
+    const cfgBaseInput = document.getElementById('cfgBaseInput');
+    const valueInput = document.getElementById('valueInput');
+    const kAndsInput = document.getElementById('kAndsInput');
+    const kTestInput = document.getElementById('kTestInput');
+    const kDocInput = document.getElementById('kDocInput');
+    const flagUnique = document.getElementById('flagUniqueLogicInput');
+    const flagSystem = document.getElementById('flagSystemCalcInput');
+    const commentInput = document.getElementById('elementCommentInput');
+
+    // разделы
+    sectionSelect.innerHTML = '';
+    Array.from(groupsMap.values()).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.code;
+      opt.textContent = g.name || g.code;
+      if (g.code === item.group_code) opt.selected = true;
+      sectionSelect.appendChild(opt);
+    });
+
+    // типы элементов
+    fillElementTypesForGroup(item.group_code);
+
+    // попытаться выбрать элемент по коду+имени
+    const matchedRow = methodologyRows.find(r =>
+      (r.group_code || '') === item.group_code &&
+      (r.element_code || '') === item.element_code &&
+      (r.element_name || '') === item.element_name
+    );
+    if (matchedRow) {
+      typeSelect.value = String(matchedRow._index);
+    }
+
+    nameInput.value = item.element_name || '';
+    qtyInput.value = item.qty;
+    cfgBaseInput.disabled = (item.cfg_type === 'fixed');
+    cfgBaseInput.value = item.cfg_base;
+    valueInput.value = item.value;
+    kAndsInput.value = item.k_ands;
+    kTestInput.value = item.k_test;
+    kDocInput.value = item.k_doc;
+    flagUnique.checked = item.has_unique_logic_flag;
+    flagSystem.checked = item.has_system_calculations_flag;
+    commentInput.value = item.comment || '';
+
+    document.getElementById('elementModalBackdrop').style.display = 'flex';
+  }
+
+  // === Таблица расчётов ===
+
+  function renderCalcTable() {
+    const tbody = document.getElementById('calcTableBody');
+    tbody.innerHTML = '';
+
+    calcItems.forEach((item, index) => {
+      const tr = document.createElement('tr');
+
+      const tdIdx = document.createElement('td');
+      tdIdx.className = 'cell-number';
+      tdIdx.textContent = String(index + 1);
+      tr.appendChild(tdIdx);
+
+      const tdSection = document.createElement('td');
+      tdSection.textContent = item.group_name || item.group_code;
+      tr.appendChild(tdSection);
+
+      const tdElement = document.createElement('td');
+      let text = '';
+      if (showCodes && item.element_code) {
+        text = '[' + item.element_code + '] ' + (item.element_name || '');
+      } else {
+        text = item.element_name || item.element_code || '';
+      }
+      tdElement.textContent = text;
+      if (item.cfg_type === 'individual') {
+        const tag = document.createElement('span');
+        tag.className = 'tag-flag';
+        tag.textContent = 'individual';
+        tdElement.appendChild(tag);
+      }
+      if (item.scaling_type && item.scaling_type !== 'none') {
+        const tag = document.createElement('span');
+        tag.className = 'tag-flag';
+        tag.textContent = item.scaling_type;
+        tdElement.appendChild(tag);
+      }
+      tr.appendChild(tdElement);
+
+      const tdCfgBase = document.createElement('td');
+      tdCfgBase.className = 'cell-number';
+      tdCfgBase.textContent = fmtNumber(item.cfg_base, 3);
+      tr.appendChild(tdCfgBase);
+
+      const tdKAnds = document.createElement('td');
+      tdKAnds.className = 'cell-number';
+      tdKAnds.textContent = fmtNumber(item.k_ands, 2);
+      tr.appendChild(tdKAnds);
+
+      const tdKTest = document.createElement('td');
+      tdKTest.className = 'cell-number';
+      tdKTest.textContent = fmtNumber(item.k_test, 2);
+      tr.appendChild(tdKTest);
+
+      const tdKDoc = document.createElement('td');
+      tdKDoc.className = 'cell-number';
+      tdKDoc.textContent = fmtNumber(item.k_doc, 2);
+      tr.appendChild(tdKDoc);
+
+      const tdKi = document.createElement('td');
+      tdKi.className = 'cell-number';
+      const ki = 1 + item.k_ands + item.k_test + item.k_doc;
+      tdKi.textContent = fmtNumber(ki, 2);
+      tr.appendChild(tdKi);
+
+      const tdQty = document.createElement('td');
+      tdQty.className = 'cell-number';
+      tdQty.textContent = String(item.qty);
+      tr.appendChild(tdQty);
+
+      const tdTotalNoK = document.createElement('td');
+      tdTotalNoK.className = 'cell-number';
+      tdTotalNoK.textContent = fmtNumber(item.eff_total, 2);
+      tr.appendChild(tdTotalNoK);
+
+      const tdCfgPhase = document.createElement('td');
+      tdCfgPhase.className = 'cell-number';
+      tdCfgPhase.textContent = fmtNumber(item.eff_cfg, 2);
+      tr.appendChild(tdCfgPhase);
+
+      const tdAndsPhase = document.createElement('td');
+      tdAndsPhase.className = 'cell-number';
+      tdAndsPhase.textContent = fmtNumber(item.eff_ands, 2);
+      tr.appendChild(tdAndsPhase);
+
+      const tdTestPhase = document.createElement('td');
+      tdTestPhase.className = 'cell-number';
+      tdTestPhase.textContent = fmtNumber(item.eff_test, 2);
+      tr.appendChild(tdTestPhase);
+
+      const tdDocPhase = document.createElement('td');
+      tdDocPhase.className = 'cell-number';
+      tdDocPhase.textContent = fmtNumber(item.eff_doc, 2);
+      tr.appendChild(tdDocPhase);
+
+      const tdComment = document.createElement('td');
+      tdComment.textContent = item.comment || '';
+      tr.appendChild(tdComment);
+
+      const tdActions = document.createElement('td');
+      tdActions.className = 'cell-actions';
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'button-secondary button-sm';
+      editBtn.textContent = 'Редактировать';
+      editBtn.addEventListener('click', () => openElementModalForEdit(item.id));
+      tdActions.appendChild(editBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'button-danger button-sm';
+      delBtn.textContent = 'Удалить';
+      delBtn.style.marginLeft = '4px';
+      delBtn.addEventListener('click', () => {
+        if (confirm('Удалить элемент из расчёта?')) {
+          calcItems = calcItems.filter(x => x.id !== item.id);
+          renderCalcTable();
+          recalcGroupStats();
+          document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
         }
-      };
-      reader.readAsText(file);
-    }
+      });
+      tdActions.appendChild(delBtn);
 
-    function downloadFile(content, name, type) {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+      tr.appendChild(tdActions);
 
-    elements.loadExcelBtn.addEventListener('click', async () => {
-      const file = elements.excelInput.files?.[0];
-      if (!file) { showError('Выберите файл Excel.'); return; }
-      showError('');
+      tbody.appendChild(tr);
+    });
+
+    recalcTotals();
+  }
+
+  function recalcTotals() {
+    let sumCfg = 0;
+    let sumAnds = 0;
+    let sumTest = 0;
+    let sumDoc = 0;
+    let sumTotal = 0;
+
+    calcItems.forEach(item => {
+      sumCfg += item.eff_cfg || 0;
+      sumAnds += item.eff_ands || 0;
+      sumTest += item.eff_test || 0;
+      sumDoc += item.eff_doc || 0;
+      sumTotal += item.eff_total || 0;
+    });
+
+    const kPlatform = safeNumber(document.getElementById('kPlatformInput').value || 1, 1);
+    const totalWithK = sumTotal * kPlatform;
+
+    setTotals(sumCfg, sumAnds, sumTest, sumDoc, totalWithK);
+  }
+
+  function setTotals(cfg, ands, test, doc, totalWithK) {
+    document.getElementById('totalCfg').textContent = fmtNumber(cfg, 2);
+    document.getElementById('totalAnds').textContent = fmtNumber(ands, 2);
+    document.getElementById('totalTest').textContent = fmtNumber(test, 2);
+    document.getElementById('totalDoc').textContent = fmtNumber(doc, 2);
+    document.getElementById('totalOverall').textContent = fmtNumber(totalWithK, 2);
+  }
+
+  // === Методика: модальное окно ===
+
+  function renderMethodologyTable() {
+    const tbody = document.getElementById('methodologyTableBody');
+    tbody.innerHTML = '';
+    methodologyRows.forEach(row => {
+      const tr = document.createElement('tr');
+
+      function td(text, cls, digits) {
+        const td = document.createElement('td');
+        if (cls) td.className = cls;
+        if (digits != null && text != null && text !== '') {
+          td.textContent = fmtNumber(text, digits);
+        } else {
+          td.textContent = text == null ? '' : String(text);
+        }
+        tr.appendChild(td);
+      }
+
+      td(row.group_code);
+      td(row.group_name);
+      td(row.element_code);
+      td(row.element_name);
+      td(row.cfg_type);
+      td(row.cfg_min, 'cell-number', 3);
+      td(row.cfg_max, 'cell-number', 3);
+      td(row.cfg_fixed, 'cell-number', 3);
+      td(row.ands_coeff, 'cell-number', 2);
+      td(row.test_coeff, 'cell-number', 2);
+      td(row.doc_coeff, 'cell-number', 2);
+      td(row.scaling_type);
+      td(row.base_value, 'cell-number', 3);
+      td(row.step, 'cell-number', 3);
+      td(row.delta_cfg, 'cell-number', 3);
+      td(row.multiplier, 'cell-number', 3);
+      td(row.pack_size, 'cell-number', 3);
+      td(row.has_unique_logic_flag ? '1' : '0', 'cell-number');
+      td(row.has_system_calculations_flag ? '1' : '0', 'cell-number');
+      td(row.is_individual ? '1' : '0', 'cell-number');
+      td(row.cfg_custom_max, 'cell-number', 3);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openMethodologyModal() {
+    if (!hasMethodology) {
+      alert('Сначала загрузите Excel-методику.');
+      return;
+    }
+    document.getElementById('methodologyModalBackdrop').style.display = 'flex';
+  }
+
+  function closeMethodologyModal() {
+    document.getElementById('methodologyModalBackdrop').style.display = 'none';
+  }
+
+  // === Экспорт CSV ===
+
+  function exportSummaryCsv() {
+    if (calcItems.length === 0) {
+      alert('Нет данных для экспорта.');
+      return;
+    }
+    const byGroup = new Map();
+    calcItems.forEach(item => {
+      const key = item.group_code;
+      let agg = byGroup.get(key);
+      if (!agg) {
+        agg = {
+          group_code: item.group_code,
+          group_name: item.group_name,
+          cfg: 0,
+          ands: 0,
+          test: 0,
+          doc: 0,
+          total: 0
+        };
+        byGroup.set(key, agg);
+      }
+      agg.cfg += item.eff_cfg || 0;
+      agg.ands += item.eff_ands || 0;
+      agg.test += item.eff_test || 0;
+      agg.doc += item.eff_doc || 0;
+      agg.total += item.eff_total || 0;
+    });
+
+    const rows = [];
+    rows.push(['group_code', 'group_name', 'CFG', 'ANDS', 'TEST', 'DOC', 'TOTAL']);
+    byGroup.forEach(agg => {
+      rows.push([
+        agg.group_code,
+        agg.group_name,
+        fmtNumber(agg.cfg, 2),
+        fmtNumber(agg.ands, 2),
+        fmtNumber(agg.test, 2),
+        fmtNumber(agg.doc, 2),
+        fmtNumber(agg.total, 2)
+      ]);
+    });
+
+    const csv = '\uFEFF' + rows.map(r => r.map(v => String(v).replace(/"/g, '""')).join(';')).join('\n');
+    downloadFile('calc_summary.csv', csv, 'text/csv;charset=utf-8');
+  }
+
+  function exportDetailCsv() {
+    if (calcItems.length === 0) {
+      alert('Нет данных для экспорта.');
+      return;
+    }
+    const rows = [];
+    rows.push([
+      '№',
+      'group_code',
+      'group_name',
+      'element_code',
+      'element_name',
+      'cfg_type',
+      'scaling_type',
+      'qty',
+      'cfg_base',
+      'value',
+      'k_ANDS',
+      'k_TEST',
+      'k_DOC',
+      'cfg_intermediate',
+      'Eff_CFG',
+      'Eff_ANDS',
+      'Eff_TEST',
+      'Eff_DOC',
+      'Eff_TOTAL_element',
+      'has_unique_logic_flag',
+      'has_system_calculations_flag',
+      'is_individual',
+      'comment'
+    ]);
+
+    calcItems.forEach((item, idx) => {
+      rows.push([
+        idx + 1,
+        item.group_code,
+        item.group_name,
+        item.element_code,
+        item.element_name,
+        item.cfg_type,
+        item.scaling_type,
+        item.qty,
+        fmtNumber(item.cfg_base, 3),
+        fmtNumber(item.value, 3),
+        fmtNumber(item.k_ands, 2),
+        fmtNumber(item.k_test, 2),
+        fmtNumber(item.k_doc, 2),
+        fmtNumber(item.cfg_intermediate, 3),
+        fmtNumber(item.eff_cfg, 3),
+        fmtNumber(item.eff_ands, 3),
+        fmtNumber(item.eff_test, 3),
+        fmtNumber(item.eff_doc, 3),
+        fmtNumber(item.eff_total, 3),
+        item.has_unique_logic_flag ? '1' : '0',
+        item.has_system_calculations_flag ? '1' : '0',
+        item.is_individual ? '1' : '0',
+        (item.comment || '').replace(/[\r\n]+/g, ' ')
+      ]);
+    });
+
+    const csv = '\uFEFF' + rows.map(r => r.map(v => String(v).replace(/"/g, '""')).join(';')).join('\n');
+    downloadFile('calc_detail.csv', csv, 'text/csv;charset=utf-8');
+  }
+
+  // === Снапшоты ===
+
+  function collectMetaState() {
+    return {
+      projectName: document.getElementById('projectName').value || '',
+      calcDate: document.getElementById('calcDate').value || '',
+      calcVersion: document.getElementById('calcVersion').value || '',
+      executor: document.getElementById('executor').value || '',
+      customer: document.getElementById('customer').value || '',
+      kPlatform: safeNumber(document.getElementById('kPlatformInput').value || 1, 1)
+    };
+  }
+
+  function applyMetaState(meta) {
+    document.getElementById('projectName').value = meta.projectName || '';
+    document.getElementById('calcDate').value = meta.calcDate || '';
+    document.getElementById('calcVersion').value = meta.calcVersion || '';
+    document.getElementById('executor').value = meta.executor || '';
+    document.getElementById('customer').value = meta.customer || '';
+    document.getElementById('kPlatformInput').value = meta.kPlatform != null ? meta.kPlatform : 1;
+  }
+
+  function saveSnapshot() {
+    const snapshot = {
+      meta: collectMetaState(),
+      methodologyRows,
+      calcItems,
+      nextItemId
+    };
+    const json = JSON.stringify(snapshot, null, 2);
+    downloadFile('calc_snapshot.json', json, 'application/json;charset=utf-8');
+  }
+
+  function handleSnapshotUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
       try {
-        const rows = await readExcel(file);
-        const validation = validateColumns(rows);
-        if (validation) { showError(validation); return; }
-        initFromMethodology(rows);
-      } catch (err) {
-        showError(err.message || 'Ошибка загрузки файла');
-      }
-    });
+        const json = JSON.parse(e.target.result);
+        if (!json || typeof json !== 'object') {
+          alert('Некорректный формат снапшота.');
+          return;
+        }
+        if (!Array.isArray(json.methodologyRows) || !Array.isArray(json.calcItems)) {
+          alert('В снапшоте отсутствуют необходимые данные.');
+          return;
+        }
 
-    document.getElementById('modal-group').addEventListener('change', (e) => populateElementsForGroup(e.target.value));
-    document.getElementById('modal-element').addEventListener('change', (e) => updateModalByElement(e.target.value));
-    elements.addRowBtn.addEventListener('click', () => openElementModal(state.groups[0]?.code));
-    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
-    document.getElementById('modal-save').addEventListener('click', saveModal);
-    elements.kPlatform.addEventListener('input', renderTotals);
-    elements.toggleCodes.addEventListener('change', () => { state.showCodes = elements.toggleCodes.checked; renderTable(); });
-    elements.exportSummary.addEventListener('click', () => exportCSV(false));
-    elements.exportDetailed.addEventListener('click', () => exportCSV(true));
-    elements.saveSnapshot.addEventListener('click', saveSnapshotFile);
-    elements.loadSnapshot.addEventListener('click', () => elements.loadSnapshotInput.click());
-    elements.loadSnapshotInput.addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (file) loadSnapshotFile(file);
-    });
-    elements.openMethodology.addEventListener('click', () => document.getElementById('methodology-modal').classList.remove('hidden'));
+        methodologyRows = json.methodologyRows;
+        calcItems = json.calcItems;
+        nextItemId = json.nextItemId || (calcItems.reduce((max, it) => Math.max(max, it.id || 0), 0) + 1);
 
-    elements.projectToggle.addEventListener('click', () => {
-      const hidden = elements.projectBody.classList.toggle('hidden');
-      elements.projectToggle.textContent = hidden ? 'Развернуть' : 'Свернуть';
-    });
-    elements.extraToggle.addEventListener('click', () => {
-      const hidden = elements.extraBody.classList.toggle('hidden');
-      elements.extraToggle.textContent = hidden ? 'Развернуть' : 'Свернуть';
-    });
+        buildGroupsFromMethodology();
+        hasMethodology = true;
+        onMethodologyLoaded();
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
-      }
-    });
-  </script>
+        applyMetaState(json.meta || {});
+    renderCalcTable();
+    recalcGroupStats();
+    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
+
+    document.getElementById('methodStatusBadge').textContent = 'Методика загружена (из снапшота)';
+    document.getElementById('kPlatformInput').disabled = false;
+    document.getElementById('openMethodologyBtn').disabled = false;
+    document.getElementById('toggleShowCodes').disabled = false;
+    document.getElementById('exportSummaryCsvBtn').disabled = false;
+    document.getElementById('exportDetailCsvBtn').disabled = false;
+    document.getElementById('saveSnapshotBtn').disabled = false;
+    document.getElementById('loadSnapshotBtn').disabled = false;
+  } catch (err) {
+    console.error(err);
+    alert('Ошибка при чтении снапшота: ' + err.message);
+  } finally {
+    event.target.value = '';
+  }
+};
+reader.readAsText(file, 'utf-8');
+
+} </script>
+
 </body>
 </html>
