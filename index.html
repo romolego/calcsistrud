@@ -101,6 +101,12 @@
       flex-direction: column;
       gap: 2px;
     }
+    .flag-toggle-field {
+      justify-content: flex-end;
+    }
+    .flag-toggle-field .toggle-switch {
+      margin-top: auto;
+    }
     .field label {
       font-size: 11px;
       color: var(--muted);
@@ -195,7 +201,7 @@
     .method-layout {
       display: flex;
       gap: 12px;
-      align-items: center;
+      align-items: flex-end;
       width: 100%;
       overflow-x: auto;
       flex-wrap: nowrap;
@@ -229,8 +235,9 @@
     }
 
     .method-file-row .field input {
-      flex: 1 1 0;
-      min-width: 260px;
+      flex: 0 1 50%;
+      min-width: 160px;
+      max-width: 50%;
     }
 
     .method-actions {
@@ -240,6 +247,7 @@
 
     .method-actions .button-secondary {
       white-space: nowrap;
+      min-width: 280px;
     }
 
     .method-hint {
@@ -410,6 +418,12 @@
       background: #ffffff;
       padding-right: 12px;
     }
+    #calcTableWrapper {
+      padding-right: 0;
+    }
+    #calcTable {
+      width: 100%;
+    }
     .methodology-table-wrapper {
       max-height: 400px;
     }
@@ -466,6 +480,9 @@
       gap: 6px;
       height: 100%;
       width: 100%;
+    }
+    #calcTable .cell-actions {
+      align-self: stretch;
     }
     .cell-muted {
       color: var(--muted);
@@ -822,6 +839,10 @@
     td:last-child {
       padding-right: 8px;
     }
+    #calcTable th:last-child,
+    #calcTable td:last-child {
+      padding-right: 14px;
+    }
 
   .table-topbar {
       display: flex;
@@ -1150,20 +1171,11 @@
       </div>
 
       <div class="field-row">
-        <div class="field">
-          <label>Флаги</label>
-          <div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="flagUniqueLogicInput"/>
-              <span>Уникальная логика</span>
-            </label>
-          </div>
-          <div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="flagSystemCalcInput"/>
-              <span>Системные расчёты</span>
-            </label>
-          </div>
+        <div class="field flag-toggle-field">
+          <label class="toggle-switch">
+            <input type="checkbox" id="flagUniqueLogicInput"/>
+            <span>Уникальная логика</span>
+          </label>
         </div>
         <div class="field" style="flex:2 1 200px;max-width:680px;">
           <label for="elementCommentInput">Комментарий</label>
@@ -1542,6 +1554,9 @@ CFG_base определяется по cfg_type:
     document.getElementById('elementCancelBtn').addEventListener('click', () => {
       closeElementModal();
     });
+    document.getElementById('elementModalBackdrop').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeElementModal();
+    });
     document.getElementById('elementSaveBtn').addEventListener('click', handleElementSave);
 
     document.getElementById('elementSectionSelect').addEventListener('change', handleElementSectionChange);
@@ -1802,7 +1817,6 @@ CFG_base определяется по cfg_type:
       const meta = document.createElement('div');
       meta.className = 'section-card-meta';
       meta.innerHTML = `
-        <div class="stat-line"><span>Строк методики:</span><span>${group.rows.length}</span></div>
         <div class="stat-line"><span>Строк в таблице:</span><span data-role="row-count">0</span></div>
         <div class="stat-line"><span>Итоговая трудоёмкость:</span><span data-role="sum-no-k">0</span><span class="total-card-unit">чел./дн.</span></div>
       `;
@@ -1981,13 +1995,11 @@ CFG_base определяется по cfg_type:
     const kTestInput = document.getElementById('kTestInput');
     const kDocInput = document.getElementById('kDocInput');
     const flagUnique = document.getElementById('flagUniqueLogicInput');
-    const flagSystem = document.getElementById('flagSystemCalcInput');
     const commentInput = document.getElementById('elementCommentInput');
 
     qtyInput.value = '1';
     valueInput.value = '0';
     flagUnique.checked = false;
-    flagSystem.checked = false;
     commentInput.value = '';
     nameInput.value = '';
 
@@ -2021,7 +2033,6 @@ CFG_base определяется по cfg_type:
     const kTestInput = document.getElementById('kTestInput');
     const kDocInput = document.getElementById('kDocInput');
     const flagUnique = document.getElementById('flagUniqueLogicInput');
-    const flagSystem = document.getElementById('flagSystemCalcInput');
     const saveBtn = document.getElementById('elementSaveBtn');
 
     if (!row) {
@@ -2033,7 +2044,6 @@ CFG_base определяется по cfg_type:
       kTestInput.value = '';
       kDocInput.value = '';
       flagUnique.checked = false;
-      flagSystem.checked = false;
       if (saveBtn) saveBtn.disabled = false;
       return;
     }
@@ -2052,7 +2062,6 @@ CFG_base определяется по cfg_type:
     kTestInput.value = row.test_coeff || 0;
     kDocInput.value = row.doc_coeff || 0;
     flagUnique.checked = row.has_unique_logic_flag;
-    flagSystem.checked = row.has_system_calculations_flag;
     if (saveBtn) saveBtn.disabled = false;
   }
 
@@ -2099,7 +2108,6 @@ CFG_base определяется по cfg_type:
     const kTestInput = document.getElementById('kTestInput');
     const kDocInput = document.getElementById('kDocInput');
     const flagUnique = document.getElementById('flagUniqueLogicInput');
-    const flagSystem = document.getElementById('flagSystemCalcInput');
     const commentInput = document.getElementById('elementCommentInput');
 
     const groupCode = sectionSelect.value;
@@ -2185,7 +2193,7 @@ CFG_base определяется по cfg_type:
     }
 
     let uniqueFlag = flagUnique.checked || methodRow.has_unique_logic_flag;
-    let systemFlag = flagSystem.checked || methodRow.has_system_calculations_flag;
+    const systemFlag = methodRow.has_system_calculations_flag;
     if (uniqueFlag) cfgIntermediate *= 2;
     if (systemFlag) cfgIntermediate *= 2;
 
@@ -2253,7 +2261,6 @@ CFG_base определяется по cfg_type:
     const kTestInput = document.getElementById('kTestInput');
     const kDocInput = document.getElementById('kDocInput');
     const flagUnique = document.getElementById('flagUniqueLogicInput');
-    const flagSystem = document.getElementById('flagSystemCalcInput');
     const commentInput = document.getElementById('elementCommentInput');
 
     // разделы
@@ -2288,7 +2295,6 @@ CFG_base определяется по cfg_type:
     kTestInput.value = item.k_test;
     kDocInput.value = item.k_doc;
     flagUnique.checked = item.has_unique_logic_flag;
-    flagSystem.checked = item.has_system_calculations_flag;
     commentInput.value = item.comment || '';
 
     document.getElementById('elementModalBackdrop').style.display = 'flex';
