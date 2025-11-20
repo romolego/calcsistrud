@@ -452,11 +452,13 @@
       padding: 4px 6px;
       text-align: left;
       vertical-align: middle;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     th {
       font-weight: 600;
       font-size: 11px;
-      white-space: nowrap;
     }
 
     .number-col {
@@ -470,19 +472,19 @@
     }
     .cell-number {
       text-align: center;
-      white-space: nowrap;
     }
-    .cell-actions {
-      white-space: nowrap;
-      display: flex;
+    td.cell-actions {
+      padding: 0;
+      border-bottom-color: transparent;
+      vertical-align: middle;
+    }
+    .cell-actions-content {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      height: 100%;
+      padding: 4px 6px;
       width: 100%;
-    }
-    #calcTable .cell-actions {
-      align-self: stretch;
     }
     .cell-muted {
       color: var(--muted);
@@ -813,7 +815,7 @@
       word-break: break-word;
     }
 
-      .compressed-table .cell-actions {
+      .compressed-table .cell-actions-content {
         display: flex;
         gap: 4px;
         align-items: center;
@@ -1108,7 +1110,7 @@
         <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт CSV</button>
         <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled>Сохранить снапшот</button>
         <div style="display:flex;align-items:center;gap:6px;flex:1 1 0;">
-          <button type="button" class="button-secondary" style="width:100%;" id="loadSnapshotBtn" disabled>Загрузить снапшот</button>
+          <button type="button" class="button-secondary" style="width:100%;" id="loadSnapshotBtn">Загрузить снапшот</button>
           <input type="file" id="snapshotFileInput" accept=".json" style="display:none;"/>
         </div>
       </div>
@@ -1618,7 +1620,13 @@ CFG_base определяется по cfg_type:
     const rowsEl = document.getElementById('calcRowsCount');
     const sectionsEl = document.getElementById('calcSectionsCount');
     if (rowsEl) rowsEl.textContent = calcItems.length;
-    if (sectionsEl) sectionsEl.textContent = groupsMap.size;
+    if (sectionsEl) {
+      const usedSections = new Set();
+      calcItems.forEach((item) => {
+        if (item.group_code) usedSections.add(item.group_code);
+      });
+      sectionsEl.textContent = usedSections.size;
+    }
   }
 
   function resetState() {
@@ -1647,7 +1655,7 @@ CFG_base определяется по cfg_type:
     showCodesCheckbox.checked = true;
     document.getElementById('exportDetailCsvBtn').disabled = true;
     document.getElementById('saveSnapshotBtn').disabled = true;
-    document.getElementById('loadSnapshotBtn').disabled = true;
+    document.getElementById('loadSnapshotBtn').disabled = false;
 
     document.getElementById('methodSectionBody').classList.remove('hidden');
     document.getElementById('toggleMethodSectionBtn').textContent = 'Свернуть';
@@ -2446,13 +2454,15 @@ CFG_base определяется по cfg_type:
 
         const tdActions = document.createElement('td');
         tdActions.className = 'cell-actions';
+        const actionsWrap = document.createElement('div');
+        actionsWrap.className = 'cell-actions-content';
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'action-icon';
         editBtn.textContent = '✏️';
         editBtn.title = 'Редактировать';
         editBtn.addEventListener('click', () => openElementModalForEdit(item.id));
-        tdActions.appendChild(editBtn);
+        actionsWrap.appendChild(editBtn);
 
         const dupBtn = document.createElement('button');
         dupBtn.type = 'button';
@@ -2460,7 +2470,7 @@ CFG_base определяется по cfg_type:
         dupBtn.textContent = '📑';
         dupBtn.title = 'Дублировать';
         dupBtn.addEventListener('click', () => duplicateItem(item.id));
-        tdActions.appendChild(dupBtn);
+        actionsWrap.appendChild(dupBtn);
 
         const delBtn = document.createElement('button');
         delBtn.type = 'button';
@@ -2474,7 +2484,9 @@ CFG_base определяется по cfg_type:
             recalcGroupStats();
           }
         });
-        tdActions.appendChild(delBtn);
+        actionsWrap.appendChild(delBtn);
+
+        tdActions.appendChild(actionsWrap);
 
         tr.appendChild(tdActions);
 
@@ -2795,7 +2807,10 @@ CFG_base определяется по cfg_type:
       meta: collectMetaState(),
       methodologyRows,
       calcItems,
-      nextItemId
+      nextItemId,
+      showCodes,
+      activeOnlyGroup,
+      methodFileName
     };
     const json = JSON.stringify(snapshot, null, 2);
     downloadFile('calc_snapshot.json', json, 'application/json;charset=utf-8');
@@ -2821,35 +2836,42 @@ CFG_base определяется по cfg_type:
         methodologyRows = json.methodologyRows;
         calcItems = json.calcItems;
         nextItemId = json.nextItemId || (calcItems.reduce((max, it) => Math.max(max, it.id || 0), 0) + 1);
+        activeOnlyGroup = json.activeOnlyGroup || null;
+        showCodes = json.showCodes != null ? !!json.showCodes : true;
+        methodFileName = json.methodFileName || '';
 
         buildGroupsFromMethodology();
         hasMethodology = true;
         onMethodologyLoaded();
 
         applyMetaState(json.meta || {});
-    renderCalcTable();
-    recalcGroupStats();
+        document.getElementById('toggleShowCodes').checked = showCodes;
+        applyLabels();
+        renderCalcTable();
+        recalcGroupStats();
 
-    document.getElementById('methodStatusBadge').textContent = 'Методика загружена (из снапшота)';
-    methodFileName = file.name || 'Снапшот';
-    document.getElementById('methodSuccessHint').style.display = 'block';
-    updateMethodTitle();
-    document.getElementById('kPlatformInput').disabled = false;
-    document.getElementById('openMethodologyBtn').disabled = false;
-    document.getElementById('toggleShowCodes').disabled = false;
-    document.getElementById('exportDetailCsvBtn').disabled = false;
-    document.getElementById('saveSnapshotBtn').disabled = false;
-    document.getElementById('loadSnapshotBtn').disabled = false;
-  } catch (err) {
-    console.error(err);
-    alert('Ошибка при чтении снапшота: ' + err.message);
-  } finally {
-    event.target.value = '';
+        document.getElementById('methodStatusBadge').textContent = 'Методика загружена (из снапшота)';
+        const snapshotMethodName = methodFileName || file.name || 'Снапшот';
+        methodFileName = snapshotMethodName;
+        document.getElementById('methodSuccessHint').style.display = 'block';
+        updateMethodTitle();
+        document.getElementById('kPlatformInput').disabled = false;
+        document.getElementById('openMethodologyBtn').disabled = false;
+        document.getElementById('toggleShowCodes').disabled = false;
+        document.getElementById('exportDetailCsvBtn').disabled = false;
+        document.getElementById('saveSnapshotBtn').disabled = false;
+        document.getElementById('loadSnapshotBtn').disabled = false;
+      } catch (err) {
+        console.error(err);
+        alert('Ошибка при чтении снапшота: ' + err.message);
+      } finally {
+        event.target.value = '';
+      }
+    };
+    reader.readAsText(file, 'utf-8');
+
   }
-};
-reader.readAsText(file, 'utf-8');
-
-} </script>
+</script>
 
 </body>
 </html>
