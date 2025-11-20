@@ -189,28 +189,45 @@
     }
 
     .method-layout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      grid-auto-rows: auto;
+      align-items: start;
+    }
+
+    .method-file-row {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    .method-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .method-row .field {
-      flex: 1 1 320px;
-      margin: 0;
+      gap: 6px;
     }
 
     .method-actions {
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      flex: 0 0 auto;
+      align-items: flex-end;
+    }
+
+    .method-actions .button-secondary {
+      width: 100%;
+    }
+
+    .method-hint {
+      grid-column: 1 / 2;
+    }
+
+    .method-footer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: flex-end;
+      gap: 12px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .status-text {
+      font-size: 12px;
+      color: var(--ok);
+      align-self: flex-end;
     }
 
     .k-platform-row {
@@ -232,7 +249,7 @@
 
     .tooltip-icon {
       display: inline-flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       width: 18px;
       height: 18px;
@@ -293,15 +310,18 @@
       text-align: center;
     }
     .section-card-title {
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 15px;
+      font-weight: 700;
       width: 100%;
     }
     .section-card-meta {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--muted);
       text-align: left;
       width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .section-card-meta div {
       white-space: nowrap;
@@ -317,13 +337,14 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-size: 11px;
+      font-size: 10px;
     }
     .section-card-flags label {
       display: flex;
       align-items: center;
       gap: 6px;
       cursor: pointer;
+      white-space: nowrap;
     }
     .section-card-actions {
       display: flex;
@@ -349,9 +370,13 @@
       max-height: 520px;
       background: #ffffff;
     }
+    .methodology-table-wrapper {
+      max-height: 400px;
+    }
     .table-wrapper.no-height-limit {
       max-height: none;
-      overflow: visible;
+      overflow-y: visible;
+      overflow-x: auto;
     }
     .table-wrapper.compressed-table {
       overflow-x: hidden;
@@ -391,6 +416,10 @@
     }
     .cell-actions {
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
     }
     .cell-muted {
       color: var(--muted);
@@ -498,6 +527,8 @@
       align-items: center;
       justify-content: center;
       z-index: 50;
+      padding: 20px;
+      overflow: auto;
     }
     .modal {
       background: #ffffff;
@@ -511,8 +542,9 @@
       overflow: hidden;
     }
     .modal.full-height {
-      max-height: none;
-      height: auto;
+      max-height: calc(100vh - 40px);
+      height: calc(100vh - 40px);
+      overflow: auto;
     }
     .modal-header {
       padding: 8px 12px;
@@ -589,19 +621,44 @@
       color: var(--muted);
     }
 
-    .extras-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    .extra-card {
+    .icon-button {
       border: none;
       background: transparent;
-      padding: 0;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 6px;
+      line-height: 1;
+      border-radius: 6px;
+      color: var(--muted);
+    }
+    .icon-button:hover {
+      background: #e2e8f0;
+      color: var(--fg);
+    }
+
+    .extras-row {
       display: flex;
+      gap: 10px;
       align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    .extras-row > * {
+      flex: 1 1 0;
+      display: flex;
       justify-content: center;
+    }
+    .extras-row label,
+    .extras-row button {
+      width: 100%;
+      justify-content: center;
+    }
+    .extras-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: auto;
+      justify-content: flex-start;
     }
 
     .action-icon {
@@ -624,7 +681,29 @@
     .group-header-content {
       display: flex;
       align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .group-stats {
+      display: inline-flex;
       gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    .group-stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     .group-add-btn {
@@ -761,25 +840,27 @@
     </div>
     <div class="section-body" id="methodSectionBody">
       <div class="method-layout">
-        <div class="method-row">
+        <div class="method-file-row">
           <div class="field">
             <label for="excelInput">Файл методики (.xlsx)</label>
             <input id="excelInput" type="file" accept=".xlsx"/>
           </div>
-          <div class="method-actions">
-            <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
-          </div>
         </div>
+        <div class="method-actions">
+          <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
+        </div>
+        <div class="upload-hint method-hint">
+          После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
+          Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
+        </div>
+      </div>
+      <div class="method-footer">
+        <div class="status-text" id="methodSuccessHint" style="display:none;">Файл успешно загружен.</div>
         <div class="k-platform-row">
           <label for="kPlatformInput" data-label-base="Коэффициент платформы" data-label-code="K_platform">Коэффициент платформы — K_platform</label>
           <input id="kPlatformInput" type="number" step="0.01" value="1" disabled/>
           <span class="tooltip-icon" data-tooltip="K_platform — коэффициент платформы. Масштабирует итоговую трудоёмкость проекта.">?</span>
         </div>
-        <div class="upload-hint">
-          После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
-          Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
-        </div>
-        <div class="upload-hint" id="methodSuccessHint" style="margin-top:2px;color:var(--ok);display:none;">Файл успешно загружен.</div>
       </div>
     </div>
   </section>
@@ -897,21 +978,15 @@
       <button type="button" class="section-toggle" id="toggleExtrasBtn">Свернуть</button>
     </div>
     <div class="section-body" id="extrasBody">
-      <div class="extras-grid">
-        <div class="extra-card">
-          <label class="toggle-switch" style="gap:8px;">
-            <input type="checkbox" id="toggleShowCodes" disabled checked/>
-            <span>Показывать коды элементов</span>
-          </label>
-        </div>
-        <div class="extra-card">
-          <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт CSV</button>
-        </div>
-        <div class="extra-card">
-          <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled>Сохранить снапшот</button>
-        </div>
-        <div class="extra-card">
-          <button type="button" class="button-secondary" id="loadSnapshotBtn" disabled>Загрузить снапшот</button>
+      <div class="extras-row">
+        <label class="toggle-switch" style="gap:8px;">
+          <input type="checkbox" id="toggleShowCodes" disabled checked/>
+          <span>Показывать коды элементов</span>
+        </label>
+        <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт CSV</button>
+        <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled>Сохранить снапшот</button>
+        <div style="display:flex;align-items:center;gap:6px;flex:1 1 0;">
+          <button type="button" class="button-secondary" style="width:100%;" id="loadSnapshotBtn" disabled>Загрузить снапшот</button>
           <input type="file" id="snapshotFileInput" accept=".json" style="display:none;"/>
         </div>
       </div>
@@ -920,11 +995,11 @@
 </div>
 
 <!-- Модальное окно: элемент раздела -->
-<div class="modal-backdrop" id="elementModalBackdrop">
+  <div class="modal-backdrop" id="elementModalBackdrop">
   <div class="modal" style="max-width:960px;">
     <div class="modal-header">
       <h3>Элемент раздела</h3>
-      <button type="button" class="button-ghost button-sm" id="closeElementModalBtn">Закрыть</button>
+      <button type="button" class="icon-button" aria-label="Закрыть" id="closeElementModalBtn">✖</button>
     </div>
     <div class="modal-body">
       <div class="field-row">
@@ -988,7 +1063,7 @@
             </label>
           </div>
         </div>
-        <div class="field" style="flex:2 1 260px;">
+        <div class="field" style="flex:1 1 200px;max-width:340px;">
           <label for="elementCommentInput">Комментарий</label>
           <textarea id="elementCommentInput" placeholder="Обязательно для индивидуальных элементов (cfg_type = individual)"></textarea>
         </div>
@@ -1047,11 +1122,11 @@ CFG_base определяется по cfg_type:
 </div>
 
 <!-- Модальное окно: методика -->
-<div class="modal-backdrop" id="methodologyModalBackdrop">
+  <div class="modal-backdrop" id="methodologyModalBackdrop">
   <div class="modal" style="max-width:1100px;" id="methodologyModal">
     <div class="modal-header">
       <h3>Исходные данные методики (каталог из Excel)</h3>
-      <button type="button" class="button-ghost button-sm" id="closeMethodologyModalBtn">Закрыть</button>
+      <button type="button" class="icon-button" aria-label="Закрыть" id="closeMethodologyModalBtn">✖</button>
     </div>
     <div class="modal-body">
       <div class="upload-hint" style="margin-bottom:4px;">
@@ -1073,7 +1148,7 @@ CFG_base определяется по cfg_type:
           <input type="file" id="methodologyJsonInput" accept=".json" style="display:none;" />
         </div>
       </div>
-      <div class="table-wrapper" id="methodologyTableWrapper" style="max-height:400px;">
+      <div class="table-wrapper methodology-table-wrapper" id="methodologyTableWrapper">
         <table id="methodologyTable">
           <thead>
           <tr>
@@ -1355,6 +1430,9 @@ CFG_base определяется по cfg_type:
       document.getElementById('methodologyJsonInput').click();
     });
     document.getElementById('methodologyJsonInput').addEventListener('change', handleMethodologyJsonUpload);
+    document.getElementById('methodologyModalBackdrop').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeMethodologyModal();
+    });
 
     document.getElementById('collapseCalcTable').addEventListener('change', toggleCalcTableWidth);
     document.getElementById('collapseCalcTableHeight').addEventListener('change', toggleCalcTableHeight);
@@ -1830,8 +1908,7 @@ CFG_base определяется по cfg_type:
     fillElementTypesForGroup(groupCode);
   }
 
-  function fillElementTypesForGroup(groupCode) {
-    const typeSelect = document.getElementById('elementTypeSelect');
+  function applyMethodologyDefaults(row) {
     const nameInput = document.getElementById('elementNameInput');
     const cfgBaseInput = document.getElementById('cfgBaseInput');
     const valueInput = document.getElementById('valueInput');
@@ -1840,59 +1917,21 @@ CFG_base определяется по cfg_type:
     const kDocInput = document.getElementById('kDocInput');
     const flagUnique = document.getElementById('flagUniqueLogicInput');
     const flagSystem = document.getElementById('flagSystemCalcInput');
+    const saveBtn = document.getElementById('elementSaveBtn');
 
-    typeSelect.innerHTML = '';
-    const rows = methodologyRows.filter(r => (r.group_code || 'NO_CODE') === groupCode);
-    rows.forEach(row => {
-      const opt = document.createElement('option');
-      opt.value = String(row._index);
-      opt.textContent = `${row.element_code || ''} — ${row.element_name || ''}`.trim();
-      typeSelect.appendChild(opt);
-    });
-
-    if (rows.length > 0) {
-      const row = rows[0];
-      nameInput.value = row.element_name || '';
-      const cfgType = row.cfg_type;
-      if (cfgType === 'fixed') {
-        cfgBaseInput.value = row.cfg_fixed || 0;
-        cfgBaseInput.disabled = true;
-      } else {
-        cfgBaseInput.disabled = false;
-        cfgBaseInput.value = cfgType === 'range' ? row.cfg_min || 0 : '';
-      }
-      valueInput.value = row.base_value || 0;
-      kAndsInput.value = row.ands_coeff || 0;
-      kTestInput.value = row.test_coeff || 0;
-      kDocInput.value = row.doc_coeff || 0;
-      flagUnique.checked = row.has_unique_logic_flag;
-      flagSystem.checked = row.has_system_calculations_flag;
-    } else {
+    if (!row) {
       nameInput.value = '';
       cfgBaseInput.value = '';
+      cfgBaseInput.disabled = false;
       valueInput.value = '0';
       kAndsInput.value = '';
       kTestInput.value = '';
       kDocInput.value = '';
       flagUnique.checked = false;
       flagSystem.checked = false;
+      if (saveBtn) saveBtn.disabled = false;
+      return;
     }
-  }
-
-  function handleElementTypeChange() {
-    const typeSelect = document.getElementById('elementTypeSelect');
-    const idx = Number(typeSelect.value);
-    const row = methodologyRows.find(r => r._index === idx);
-    if (!row) return;
-
-    const nameInput = document.getElementById('elementNameInput');
-    const cfgBaseInput = document.getElementById('cfgBaseInput');
-    const valueInput = document.getElementById('valueInput');
-    const kAndsInput = document.getElementById('kAndsInput');
-    const kTestInput = document.getElementById('kTestInput');
-    const kDocInput = document.getElementById('kDocInput');
-    const flagUnique = document.getElementById('flagUniqueLogicInput');
-    const flagSystem = document.getElementById('flagSystemCalcInput');
 
     nameInput.value = row.element_name || '';
     const cfgType = row.cfg_type;
@@ -1909,6 +1948,34 @@ CFG_base определяется по cfg_type:
     kDocInput.value = row.doc_coeff || 0;
     flagUnique.checked = row.has_unique_logic_flag;
     flagSystem.checked = row.has_system_calculations_flag;
+    if (saveBtn) saveBtn.disabled = false;
+  }
+
+  function fillElementTypesForGroup(groupCode) {
+    const typeSelect = document.getElementById('elementTypeSelect');
+
+    typeSelect.innerHTML = '';
+    const rows = methodologyRows.filter(r => (r.group_code || 'NO_CODE') === groupCode);
+    rows.forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = String(row._index);
+      opt.textContent = `${row.element_code || ''} — ${row.element_name || ''}`.trim();
+      typeSelect.appendChild(opt);
+    });
+
+    if (rows.length > 0) {
+      typeSelect.value = String(rows[0]._index);
+      applyMethodologyDefaults(rows[0]);
+    } else {
+      applyMethodologyDefaults(null);
+    }
+  }
+
+  function handleElementTypeChange() {
+    const typeSelect = document.getElementById('elementTypeSelect');
+    const idx = Number(typeSelect.value);
+    const row = methodologyRows.find(r => r._index === idx);
+    applyMethodologyDefaults(row);
   }
 
   function closeElementModal() {
@@ -2155,6 +2222,24 @@ CFG_base определяется по cfg_type:
       groupTitle.textContent = labelWithCode(group.name || group.code, group.code);
       groupHeaderContent.appendChild(addButton);
       groupHeaderContent.appendChild(groupTitle);
+
+      const statsWrap = document.createElement('div');
+      statsWrap.className = 'group-stats';
+      const methodBadge = document.createElement('span');
+      methodBadge.className = 'group-stat-badge';
+      methodBadge.textContent = `Строк методики: ${group.rows.length}`;
+      const rowsBadge = document.createElement('span');
+      rowsBadge.className = 'group-stat-badge';
+      rowsBadge.textContent = `Строк в таблице расчётов: ${items.length}`;
+      const totalBadge = document.createElement('span');
+      totalBadge.className = 'group-stat-badge';
+      const groupTotal = items.reduce((acc, it) => acc + (it.eff_total || 0), 0);
+      totalBadge.textContent = `Итого трудоёмкость раздела: ${fmtNumber(groupTotal, 2)} чел.-дн.`;
+      statsWrap.appendChild(methodBadge);
+      statsWrap.appendChild(rowsBadge);
+      statsWrap.appendChild(totalBadge);
+
+      groupHeaderContent.appendChild(statsWrap);
       groupCell.appendChild(groupHeaderContent);
       groupRow.appendChild(groupCell);
       tbody.appendChild(groupRow);
