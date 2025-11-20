@@ -411,6 +411,9 @@
     }
 
     .table-wrapper {
+      --cell-word-break: normal;
+      --cell-wrap: break-word;
+      --cell-hyphenate: auto;
       border-radius: 8px;
       border: 1px solid var(--border);
       overflow: auto;
@@ -433,6 +436,8 @@
       overflow-x: auto;
     }
     .table-wrapper.compressed-table {
+      --cell-word-break: break-word;
+      --cell-wrap: anywhere;
       overflow-x: hidden;
     }
     table {
@@ -453,8 +458,9 @@
       text-align: left;
       vertical-align: middle;
       white-space: normal;
-      word-break: break-word;
-      overflow-wrap: anywhere;
+      word-break: var(--cell-word-break);
+      overflow-wrap: var(--cell-wrap);
+      hyphens: var(--cell-hyphenate);
     }
     th {
       font-weight: 600;
@@ -812,7 +818,6 @@
     .compressed-table th {
       font-size: 10px;
       line-height: 1.2;
-      word-break: break-word;
     }
 
       .compressed-table .cell-actions-content {
@@ -867,6 +872,20 @@
       font-size: 12px;
       color: var(--muted);
       white-space: nowrap;
+    }
+
+    .header-hint {
+      font-size: 10px;
+      color: var(--muted);
+      font-weight: 500;
+      display: block;
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+
+    .header-code {
+      display: block;
+      line-height: 1.2;
     }
 
     #elementCommentInput {
@@ -1104,7 +1123,7 @@
     <div class="section-body" id="extrasBody">
       <div class="extras-row">
         <label class="toggle-switch" style="gap:8px;">
-          <input type="checkbox" id="toggleShowCodes" disabled checked/>
+          <input type="checkbox" id="toggleShowCodes" disabled/>
           <span>Показывать коды элементов</span>
         </label>
         <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт CSV</button>
@@ -1260,27 +1279,27 @@ CFG_base определяется по cfg_type:
         <table id="methodologyTable">
           <thead>
           <tr>
-            <th title="Код раздела в методике">group_code</th>
-            <th title="Название раздела">group_name</th>
-            <th title="Код элемента методики">element_code</th>
-            <th title="Название элемента методики">element_name</th>
-            <th title="Тип расчёта CFG (fixed, range, individual)">cfg_type</th>
-            <th title="Минимальное значение CFG для типа range">cfg_min</th>
-            <th title="Максимальное значение CFG для типа range">cfg_max</th>
-            <th title="Фиксированное значение CFG для типа fixed">cfg_fixed</th>
-            <th title="Коэффициент для этапа анализа и проектирования">ands_coeff</th>
-            <th title="Коэффициент для этапа тестирования">test_coeff</th>
-            <th title="Коэффициент для этапа документирования">doc_coeff</th>
-            <th title="Тип наращивания CFG (additive, multiplicative, package, none)">scaling_type</th>
-            <th title="Базовое значение параметра value">base_value</th>
-            <th title="Шаг прироста параметра value">step</th>
-            <th title="Приращение CFG на каждый шаг для additive">delta_cfg</th>
-            <th title="Множитель CFG на каждый шаг для multiplicative">multiplier</th>
-            <th title="Размер пакета для типа package">pack_size</th>
-            <th title="Флаг уникальной логики (1/0)">has_unique_logic_flag</th>
-            <th title="Флаг системных расчётов (1/0)">has_system_calculations_flag</th>
-            <th title="Отметка индивидуального элемента (1/0)">is_individual</th>
-            <th title="Максимально допустимое пользовательское CFG для individual">cfg_custom_max</th>
+            <th title="Код раздела в методике"><span class="header-hint">Раздел</span><span class="header-code">group_code</span></th>
+            <th title="Название раздела"><span class="header-hint">Название раздела</span><span class="header-code">group_name</span></th>
+            <th title="Код элемента методики"><span class="header-hint">Код элемента</span><span class="header-code">element_code</span></th>
+            <th title="Название элемента методики"><span class="header-hint">Название элемента</span><span class="header-code">element_name</span></th>
+            <th title="Тип расчёта CFG (fixed, range, individual)"><span class="header-hint">Тип расчёта CFG</span><span class="header-code">cfg_type</span></th>
+            <th title="Минимальное значение CFG для типа range"><span class="header-hint">Минимальный CFG</span><span class="header-code">cfg_min</span></th>
+            <th title="Максимальное значение CFG для типа range"><span class="header-hint">Максимальный CFG</span><span class="header-code">cfg_max</span></th>
+            <th title="Фиксированное значение CFG для типа fixed"><span class="header-hint">Фиксированный CFG</span><span class="header-code">cfg_fixed</span></th>
+            <th title="Коэффициент для этапа анализа и проектирования"><span class="header-hint">Коэф. анализа</span><span class="header-code">ands_coeff</span></th>
+            <th title="Коэффициент для этапа тестирования"><span class="header-hint">Коэф. тестирования</span><span class="header-code">test_coeff</span></th>
+            <th title="Коэффициент для этапа документирования"><span class="header-hint">Коэф. документации</span><span class="header-code">doc_coeff</span></th>
+            <th title="Тип наращивания CFG (additive, multiplicative, package, none)"><span class="header-hint">Тип наращивания</span><span class="header-code">scaling_type</span></th>
+            <th title="Базовое значение параметра value"><span class="header-hint">База value</span><span class="header-code">base_value</span></th>
+            <th title="Шаг прироста параметра value"><span class="header-hint">Шаг value</span><span class="header-code">step</span></th>
+            <th title="Приращение CFG на каждый шаг для additive"><span class="header-hint">Δ CFG на шаг</span><span class="header-code">delta_cfg</span></th>
+            <th title="Множитель CFG на каждый шаг для multiplicative"><span class="header-hint">Множитель CFG</span><span class="header-code">multiplier</span></th>
+            <th title="Размер пакета для типа package"><span class="header-hint">Размер пакета</span><span class="header-code">pack_size</span></th>
+            <th title="Флаг уникальной логики (1/0)"><span class="header-hint">Уникальная логика</span><span class="header-code">has_unique_logic_flag</span></th>
+            <th title="Флаг системных расчётов (1/0)"><span class="header-hint">Системные расчёты</span><span class="header-code">has_system_calculations_flag</span></th>
+            <th title="Отметка индивидуального элемента (1/0)"><span class="header-hint">Индивидуальный элемент</span><span class="header-code">is_individual</span></th>
+            <th title="Максимально допустимое пользовательское CFG для individual"><span class="header-hint">Максимальный CFG пользователя</span><span class="header-code">cfg_custom_max</span></th>
           </tr>
           </thead>
           <tbody id="methodologyTableBody">
@@ -1304,7 +1323,7 @@ CFG_base определяется по cfg_type:
   let groupsMap = new Map();         // group_code -> { code, name, color, stats }
   let calcItems = [];                // элементы в таблице расчётов
   let hasMethodology = false;
-  let showCodes = true;
+  let showCodes = false;
   let editingItemId = null;
   let methodFileName = '';
   let activeOnlyGroup = null;
@@ -1418,6 +1437,37 @@ CFG_base определяется по cfg_type:
     if (v === '' || v == null) return def;
     const n = Number(v);
     return isFinite(n) ? n : def;
+  }
+
+  function clampDecimals(decimals) {
+    const d = Number.isInteger(decimals) ? decimals : Number(decimals) || 0;
+    return Math.min(Math.max(d, 0), 2);
+  }
+
+  function detectDecimals(raw) {
+    if (raw == null) return 0;
+    const str = String(raw).trim().replace(/\s+/g, '').replace(',', '.');
+    if (!/^[-+]?\d*(?:\.\d+)?$/.test(str)) return 0;
+    const parts = str.split('.');
+    return clampDecimals(parts[1] ? parts[1].length : 0);
+  }
+
+  function formatMethodologyNumber(value, decimals = 2) {
+    if (value == null || !isFinite(value)) return '';
+    const fixedDigits = clampDecimals(decimals);
+    return Number(value).toFixed(fixedDigits);
+  }
+
+  function ensureMethodologyDecimals(rows, formattedRows = null) {
+    rows.forEach((row, idx) => {
+      const decimals = row._decimals || {};
+      METHODOLOGY_NUMBER_FIELDS.forEach((field) => {
+        const formatted = formattedRows?.[idx]?.[field];
+        const source = formatted != null ? formatted : row[field];
+        decimals[field] = clampDecimals(detectDecimals(source));
+      });
+      row._decimals = decimals;
+    });
   }
 
   function labelWithCode(base, code) {
@@ -1635,7 +1685,7 @@ CFG_base определяется по cfg_type:
     GROUP_COLOR_CACHE.clear();
     calcItems = [];
     hasMethodology = false;
-    showCodes = true;
+    showCodes = false;
     editingItemId = null;
     methodFileName = '';
     activeOnlyGroup = null;
@@ -1652,7 +1702,7 @@ CFG_base определяется по cfg_type:
     document.getElementById('openMethodologyBtn').disabled = true;
     const showCodesCheckbox = document.getElementById('toggleShowCodes');
     showCodesCheckbox.disabled = true;
-    showCodesCheckbox.checked = true;
+    showCodesCheckbox.checked = showCodes;
     document.getElementById('exportDetailCsvBtn').disabled = true;
     document.getElementById('saveSnapshotBtn').disabled = true;
     document.getElementById('loadSnapshotBtn').disabled = false;
@@ -1694,6 +1744,7 @@ CFG_base определяется по cfg_type:
           return;
         }
         const rows = XLSX.utils.sheet_to_json(sheet, { defval: null });
+        const formattedRows = XLSX.utils.sheet_to_json(sheet, { defval: null, raw: false });
         if (!rows || rows.length === 0) {
           alert('Ошибка: лист пустой или не содержит данных.');
           return;
@@ -1734,8 +1785,10 @@ CFG_base определяется по cfg_type:
           has_system_calculations_flag: parseBoolFlag(r.has_system_calculations_flag),
           is_individual: parseBoolFlag(r.is_individual),
           cfg_custom_max: safeNumber(r.cfg_custom_max || 0),
-          short_description: String(r.short_description ?? '').trim()
+          short_description: String(r.short_description ?? '').trim(),
+          _decimals: {}
         }));
+        ensureMethodologyDecimals(methodologyRows, formattedRows);
 
         buildGroupsFromMethodology();
         hasMethodology = true;
@@ -1778,7 +1831,9 @@ CFG_base определяется по cfg_type:
     document.getElementById('methodStatusBadge').textContent = 'Методика загружена';
     document.getElementById('kPlatformInput').disabled = false;
     document.getElementById('openMethodologyBtn').disabled = false;
-    document.getElementById('toggleShowCodes').disabled = false;
+    const showCodesCheckbox = document.getElementById('toggleShowCodes');
+    showCodesCheckbox.disabled = false;
+    showCodesCheckbox.checked = showCodes;
     document.getElementById('exportDetailCsvBtn').disabled = false;
     document.getElementById('saveSnapshotBtn').disabled = false;
     document.getElementById('loadSnapshotBtn').disabled = false;
@@ -2557,6 +2612,9 @@ CFG_base определяется по cfg_type:
   async function exportTotalsAsPng() {
     const target = document.getElementById('totalsSection');
     if (!target) return;
+    const pngButton = document.getElementById('exportTotalsPngBtn');
+    const previousVisibility = pngButton?.style.visibility;
+    if (pngButton) pngButton.style.visibility = 'hidden';
     try {
       const html2canvas = await loadHtml2Canvas();
       if (!html2canvas) throw new Error('html2canvas недоступен');
@@ -2569,6 +2627,8 @@ CFG_base определяется по cfg_type:
       link.click();
     } catch (err) {
       alert('Не удалось выгрузить PNG: ' + err.message);
+    } finally {
+      if (pngButton) pngButton.style.visibility = previousVisibility || '';
     }
   }
 
@@ -2588,7 +2648,8 @@ CFG_base определяется по cfg_type:
         const value = row[col];
         if (METHODOLOGY_NUMBER_FIELDS.has(col)) {
           td.className = 'cell-number';
-          td.textContent = value == null ? '' : fmtNumber(value, 3);
+          const decimals = row._decimals?.[col];
+          td.textContent = value == null ? '' : formatMethodologyNumber(value, decimals);
         } else if (METHODOLOGY_BOOL_FIELDS.has(col)) {
           td.className = 'cell-number';
           td.textContent = row[col] ? '1' : '0';
@@ -2621,7 +2682,9 @@ CFG_base определяется по cfg_type:
 
     if (METHODOLOGY_NUMBER_FIELDS.has(field)) {
       row[field] = text === '' ? null : safeNumber(text, null);
-      td.textContent = row[field] == null ? '' : fmtNumber(row[field], 3);
+      row._decimals = row._decimals || {};
+      row._decimals[field] = detectDecimals(text === '' ? null : text);
+      td.textContent = row[field] == null ? '' : formatMethodologyNumber(row[field], row._decimals[field]);
     } else if (METHODOLOGY_BOOL_FIELDS.has(field)) {
       row[field] = parseBoolFlag(text);
       td.textContent = row[field] ? '1' : '0';
@@ -2652,7 +2715,7 @@ CFG_base определяется по cfg_type:
       alert('Нет данных методики для выгрузки.');
       return;
     }
-    const rows = methodologyRows.map(({ _index, ...rest }) => rest);
+    const rows = methodologyRows.map(({ _index, _decimals, ...rest }) => rest);
     const sheet = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, sheet, 'methodology');
@@ -2673,7 +2736,7 @@ CFG_base определяется по cfg_type:
       alert('Нет данных методики для выгрузки.');
       return;
     }
-    const rows = methodologyRows.map(({ _index, ...rest }) => rest);
+    const rows = methodologyRows.map(({ _index, _decimals, ...rest }) => rest);
     downloadFile('methodology.json', JSON.stringify(rows, null, 2), 'application/json');
   }
 
@@ -2688,10 +2751,11 @@ CFG_base определяется по cfg_type:
           throw new Error('JSON не содержит данных методики.');
         }
         methodologyRows = data.map((r, idx) => {
-          const normalized = {};
+          const normalized = { _decimals: {} };
           METHODOLOGY_COLUMNS.forEach(col => {
             if (METHODOLOGY_NUMBER_FIELDS.has(col)) {
               normalized[col] = safeNumber(r[col], null);
+              normalized._decimals[col] = detectDecimals(r[col]);
             } else if (METHODOLOGY_BOOL_FIELDS.has(col)) {
               normalized[col] = parseBoolFlag(r[col]);
             } else {
@@ -2700,6 +2764,7 @@ CFG_base определяется по cfg_type:
           });
           return { _index: idx, ...normalized };
         });
+        ensureMethodologyDecimals(methodologyRows);
         buildGroupsFromMethodology();
         hasMethodology = true;
         onMethodologyLoaded();
@@ -2793,6 +2858,66 @@ CFG_base определяется по cfg_type:
     };
   }
 
+  function collectUiState() {
+    return {
+      projectMetaHidden: document.getElementById('projectMetaBody').classList.contains('hidden'),
+      methodSectionHidden: document.getElementById('methodSectionBody').classList.contains('hidden'),
+      extrasHidden: document.getElementById('extrasBody').classList.contains('hidden'),
+      collapseCalcTable: document.getElementById('collapseCalcTable').checked,
+      collapseCalcTableHeight: document.getElementById('collapseCalcTableHeight').checked,
+      collapseMethodologyTable: document.getElementById('collapseMethodologyTable').checked,
+    };
+  }
+
+  function applySectionVisibility(bodyId, toggleBtnId, hidden) {
+    const body = document.getElementById(bodyId);
+    const btn = document.getElementById(toggleBtnId);
+    if (!body || !btn) return;
+    body.classList.toggle('hidden', hidden);
+    btn.textContent = hidden ? 'Развернуть' : 'Свернуть';
+  }
+
+  function applyUiState(state = {}) {
+    applySectionVisibility('projectMetaBody', 'toggleProjectMetaBtn', !!state.projectMetaHidden);
+    applySectionVisibility('methodSectionBody', 'toggleMethodSectionBtn', !!state.methodSectionHidden);
+    applySectionVisibility('extrasBody', 'toggleExtrasBtn', !!state.extrasHidden);
+
+    const calcWidth = document.getElementById('collapseCalcTable');
+    const calcHeight = document.getElementById('collapseCalcTableHeight');
+    const methodologyWidth = document.getElementById('collapseMethodologyTable');
+    if (calcWidth) {
+      calcWidth.checked = state.collapseCalcTable ?? calcWidth.checked;
+      toggleCalcTableWidth();
+    }
+    if (calcHeight) {
+      calcHeight.checked = state.collapseCalcTableHeight ?? calcHeight.checked;
+      toggleCalcTableHeight();
+    }
+    if (methodologyWidth) {
+      methodologyWidth.checked = state.collapseMethodologyTable ?? methodologyWidth.checked;
+      toggleMethodologyTableWidth();
+    }
+
+    updateProjectTitle();
+    updateMethodTitle();
+  }
+
+  function collectGroupStates() {
+    const states = [];
+    groupsMap.forEach((group) => {
+      states.push({ code: group.code, hidden: !!group.state.hidden });
+    });
+    return states;
+  }
+
+  function applyGroupStates(savedStates = []) {
+    const map = new Map(savedStates.map((s) => [s.code, s]));
+    groupsMap.forEach((group) => {
+      const saved = map.get(group.code);
+      group.state.hidden = saved ? !!saved.hidden : false;
+    });
+  }
+
   function applyMetaState(meta) {
     document.getElementById('projectName').value = meta.projectName || '';
     document.getElementById('calcDate').value = meta.calcDate || '';
@@ -2810,7 +2935,9 @@ CFG_base определяется по cfg_type:
       nextItemId,
       showCodes,
       activeOnlyGroup,
-      methodFileName
+      methodFileName,
+      groupStates: collectGroupStates(),
+      uiState: collectUiState()
     };
     const json = JSON.stringify(snapshot, null, 2);
     downloadFile('calc_snapshot.json', json, 'application/json;charset=utf-8');
@@ -2834,18 +2961,23 @@ CFG_base определяется по cfg_type:
         }
 
         methodologyRows = json.methodologyRows;
+        ensureMethodologyDecimals(methodologyRows);
+        const savedGroupStates = Array.isArray(json.groupStates) ? json.groupStates : [];
+        const savedUiState = json.uiState || {};
         calcItems = json.calcItems;
         nextItemId = json.nextItemId || (calcItems.reduce((max, it) => Math.max(max, it.id || 0), 0) + 1);
         activeOnlyGroup = json.activeOnlyGroup || null;
-        showCodes = json.showCodes != null ? !!json.showCodes : true;
+        showCodes = json.showCodes != null ? !!json.showCodes : false;
         methodFileName = json.methodFileName || '';
 
         buildGroupsFromMethodology();
+        applyGroupStates(savedGroupStates);
         hasMethodology = true;
         onMethodologyLoaded();
 
         applyMetaState(json.meta || {});
         document.getElementById('toggleShowCodes').checked = showCodes;
+        applyUiState(savedUiState);
         applyLabels();
         renderCalcTable();
         recalcGroupStats();
