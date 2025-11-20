@@ -188,6 +188,58 @@
       margin-top: 4px;
     }
 
+    .method-layout {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+
+    .method-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tooltip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: default;
+      position: relative;
+    }
+
+    .tooltip-icon::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      width: 240px;
+      max-width: 280px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 5;
+    }
+
+    .tooltip-icon:hover::after {
+      opacity: 1;
+    }
+
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -202,32 +254,35 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      min-height: 160px;
+      min-height: 180px;
     }
     .section-card-header {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       gap: 6px;
-      align-items: flex-start;
+      align-items: center;
+      text-align: center;
     }
     .section-card-title {
       font-size: 13px;
       font-weight: 600;
+      width: 100%;
     }
     .section-card-meta {
       font-size: 11px;
       color: var(--muted);
-      text-align: right;
+      text-align: left;
+      width: 100%;
     }
     .section-card-meta div {
       white-space: nowrap;
     }
     .section-card-body {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 6px;
+      flex-direction: column;
+      gap: 10px;
       margin-top: auto;
+      height: 100%;
     }
     .section-card-flags {
       display: flex;
@@ -243,9 +298,9 @@
     }
     .section-card-actions {
       display: flex;
-      justify-content: flex-end;
-      align-items: flex-end;
-      align-self: flex-end;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
     }
     .empty-badge {
       display: inline-block;
@@ -326,17 +381,30 @@
       min-width: 140px;
       border-radius: 8px;
       border: 1px solid var(--border);
-      padding: 6px 8px;
+      padding: 10px 12px;
       background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 96px;
     }
     .total-card-label {
       font-size: 11px;
       color: var(--muted);
+      text-align: center;
     }
     .total-card-value {
-      font-size: 15px;
-      font-weight: 600;
-      margin-top: 2px;
+      font-size: 18px;
+      font-weight: 700;
+      margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .total-card-unit {
+      font-size: 11px;
+      color: var(--muted);
     }
 
     .controls-row {
@@ -480,7 +548,7 @@
 
     .extras-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
       align-items: stretch;
     }
@@ -488,14 +556,11 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       background: #ffffff;
-      padding: 10px 12px;
+      padding: 12px 14px;
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .extra-card h3 {
-      margin: 0;
-      font-size: 13px;
+      align-items: center;
+      justify-content: center;
+      min-height: 60px;
     }
 
     .action-icon {
@@ -515,6 +580,16 @@
       font-size: 11px;
     }
 
+    .compressed-table table {
+      min-width: auto;
+      table-layout: fixed;
+    }
+
+    .compressed-table th,
+    .compressed-table td {
+      white-space: normal;
+    }
+
     .section-card.inactive {
       opacity: 0.65;
       filter: grayscale(0.2);
@@ -526,10 +601,17 @@
     .section-card-meta .stat-line {
       display: flex;
       gap: 4px;
-      justify-content: flex-end;
+      justify-content: flex-start;
     }
     .section-card-meta .stat-line span:first-child {
       color: var(--muted);
+    }
+
+    .section-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
     }
   </style>
 </head>
@@ -590,24 +672,28 @@
       </div>
     </div>
     <div class="section-body" id="methodSectionBody">
-      <div class="field" style="margin-bottom:12px;">
-        <label for="excelInput">Файл методики (.xlsx)</label>
-        <input id="excelInput" type="file" accept=".xlsx"/>
-        <div class="upload-hint">
-          После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
-          Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
+      <div class="method-layout">
+        <div class="method-box">
+          <div class="field">
+            <label for="excelInput">Файл методики (.xlsx)</label>
+            <input id="excelInput" type="file" accept=".xlsx"/>
+            <div class="upload-hint">
+              После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
+              Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
+            </div>
+            <div class="upload-hint" id="methodSuccessHint" style="margin-top:6px;color:var(--ok);display:none;">Файл успешно загружен.</div>
+          </div>
         </div>
-        <div class="upload-hint" id="methodSuccessHint" style="margin-top:6px;color:var(--ok);display:none;">Файл успешно загружен.</div>
-      </div>
-
-      <div style="margin-bottom:12px;">
-        <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
-        <span class="upload-hint">Открывает модальное окно со всем каталогом методики (строки Excel).</span>
-      </div>
-
-      <div class="field" style="max-width:260px;">
-        <label for="kPlatformInput" data-label-base="Коэффициент платформы" data-label-code="K_platform">Коэффициент платформы (K_platform)</label>
-        <input id="kPlatformInput" type="number" step="0.01" value="1" disabled/>
+        <div class="method-box">
+          <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
+          <div class="field" style="max-width:280px;">
+            <label for="kPlatformInput" data-label-base="Коэффициент платформы" data-label-code="K_platform">Коэффициент платформы (K_platform)</label>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input id="kPlatformInput" type="number" step="0.01" value="1" disabled style="flex:1 1 auto;"/>
+              <span class="tooltip-icon" data-tooltip="K_platform — коэффициент платформы. Масштабирует итоговую трудоёмкость проекта.">?</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -638,27 +724,34 @@
         <h2>Таблица расчётов</h2>
         <small>Строки добавляются через карточки разделов и модальное окно элемента</small>
       </div>
-      <span class="badge" id="rowsSummaryBadge">Строк: 0</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="button-primary button-sm" id="addRowFromHeaderBtn" title="Добавить элемент">➕</button>
+        <span class="badge" id="rowsSummaryBadge">Строк: 0</span>
+      </div>
     </div>
     <div class="section-body">
-      <div class="table-wrapper">
+      <label class="toggle-switch" style="margin-bottom:6px;">
+        <input type="checkbox" id="collapseCalcTable" checked>
+        <span>Сжать таблицу по ширине</span>
+      </label>
+      <div class="table-wrapper" id="calcTableWrapper">
         <table id="calcTable">
           <thead>
           <tr>
             <th>№</th>
             <th>Раздел</th>
             <th>Элемент (код + имя)</th>
-            <th data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG">CFG базовое</th>
-            <th data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS">k_ANDS</th>
-            <th data-label-base="Тестирование (коэффициент)" data-label-code="TEST">k_TEST</th>
-            <th data-label-base="Документирование (коэффициент)" data-label-code="DOC">k_DOC</th>
-            <th data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i">k_i</th>
+            <th data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (часы)</span></th>
+            <th data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (часы)</span></th>
+            <th data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (часы)</span></th>
+            <th data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (часы)</span></th>
+            <th data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i"><span class="label-text">k_i</span><br/><span class="muted">коэффициент</span></th>
             <th>Кол-во</th>
-            <th data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG">CFG итог TOTAL<br/>(без K_platform)</th>
-            <th data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG">CFG фаза</th>
-            <th data-label-base="Анализ и проектирование" data-label-code="ANDS">ANDS фаза</th>
-            <th data-label-base="Тестирование" data-label-code="TEST">TEST фаза</th>
-            <th data-label-base="Документирование" data-label-code="DOC">DOC фаза</th>
+            <th data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (часы)</span></th>
+            <th data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (часы)</span></th>
+            <th data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (часы)</span></th>
+            <th data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (часы)</span></th>
+            <th data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (часы)</span></th>
             <th>Комментарий</th>
             <th>Действия</th>
           </tr>
@@ -683,23 +776,23 @@
       <div class="totals-row">
         <div class="total-card">
           <div class="total-card-label" id="totalCfgLabel">CFG (суммарно по элементам)</div>
-          <div class="total-card-value" id="totalCfg">0</div>
+          <div class="total-card-value"><span id="totalCfg">0</span><span class="total-card-unit">часы</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalAndsLabel">ANDS</div>
-          <div class="total-card-value" id="totalAnds">0</div>
+          <div class="total-card-value"><span id="totalAnds">0</span><span class="total-card-unit">часы</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalTestLabel">TEST</div>
-          <div class="total-card-value" id="totalTest">0</div>
+          <div class="total-card-value"><span id="totalTest">0</span><span class="total-card-unit">часы</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalDocLabel">DOC</div>
-          <div class="total-card-value" id="totalDoc">0</div>
+          <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">часы</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalOverallLabel">TOTAL (с учётом K_platform)</div>
-          <div class="total-card-value" id="totalOverall">0</div>
+          <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">часы</span></div>
         </div>
       </div>
     </div>
@@ -717,32 +810,20 @@
     <div class="section-body" id="extrasBody">
       <div class="extras-grid">
         <div class="extra-card">
-          <h3>Настройки отображения</h3>
-          <label class="toggle-switch">
+          <label class="toggle-switch" style="gap:8px;">
             <input type="checkbox" id="toggleShowCodes" disabled/>
             <span>Показывать коды элементов</span>
           </label>
         </div>
         <div class="extra-card">
-          <h3>Экспорт / импорт</h3>
-          <div class="controls-row">
-            <div class="controls-group">
-              <span class="controls-group-label">CSV:</span>
-              <button type="button" class="button-secondary" id="exportSummaryCsvBtn" disabled>Экспорт сводного CSV</button>
-              <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled>Экспорт детального CSV</button>
-            </div>
-          </div>
-          <div class="controls-row">
-            <div class="controls-group">
-              <span class="controls-group-label">Снапшот:</span>
-              <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled>Сохранить снапшот (JSON)</button>
-              <button type="button" class="button-secondary" id="loadSnapshotBtn" disabled>Загрузить снапшот (JSON)</button>
-              <input type="file" id="snapshotFileInput" accept=".json" style="display:none;"/>
-            </div>
-          </div>
-          <div class="upload-hint" style="margin-top:6px;">
-            Снапшот JSON хранит реквизиты проекта, параметры расчёта, методику и все добавленные элементы. Его можно сохранить на диск и позже восстановить состояние калькулятора.
-          </div>
+          <button type="button" class="button-secondary" id="exportDetailCsvBtn" disabled style="width:100%;">Экспорт CSV</button>
+        </div>
+        <div class="extra-card">
+          <button type="button" class="button-secondary" id="saveSnapshotBtn" disabled style="width:100%;">Сохранить снапшот</button>
+        </div>
+        <div class="extra-card">
+          <button type="button" class="button-secondary" id="loadSnapshotBtn" disabled style="width:100%;">Загрузить снапшот</button>
+          <input type="file" id="snapshotFileInput" accept=".json" style="display:none;"/>
         </div>
       </div>
     </div>
@@ -887,7 +968,19 @@ CFG_base определяется по cfg_type:
       <div class="upload-hint" style="margin-bottom:4px;">
         Одна строка Excel = один элемент методики. Отображаются все обязательные поля.
       </div>
-      <div class="table-wrapper" style="max-height:400px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <label class="toggle-switch">
+          <input type="checkbox" id="collapseMethodologyTable" checked>
+          <span>Сжать таблицу по ширине</span>
+        </label>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button type="button" class="button-secondary" id="exportMethodologyExcelBtn">Выгрузить Excel</button>
+          <button type="button" class="button-secondary" id="exportMethodologyJsonBtn">Выгрузить JSON</button>
+          <button type="button" class="button-secondary" id="importMethodologyJsonBtn">Загрузить JSON</button>
+          <input type="file" id="methodologyJsonInput" accept=".json" style="display:none;" />
+        </div>
+      </div>
+      <div class="table-wrapper" id="methodologyTableWrapper" style="max-height:400px;">
         <table id="methodologyTable">
           <thead>
           <tr>
@@ -972,6 +1065,21 @@ CFG_base определяется по cfg_type:
     'short_description'
   ];
 
+  const METHODOLOGY_COLUMNS = [
+    'group_code', 'group_name', 'element_code', 'element_name', 'cfg_type', 'cfg_min', 'cfg_max', 'cfg_fixed',
+    'ands_coeff', 'test_coeff', 'doc_coeff', 'scaling_type', 'base_value', 'step', 'delta_cfg', 'multiplier',
+    'pack_size', 'has_unique_logic_flag', 'has_system_calculations_flag', 'is_individual', 'cfg_custom_max'
+  ];
+
+  const METHODOLOGY_NUMBER_FIELDS = new Set([
+    'cfg_min', 'cfg_max', 'cfg_fixed', 'ands_coeff', 'test_coeff', 'doc_coeff', 'base_value', 'step', 'delta_cfg',
+    'multiplier', 'pack_size', 'cfg_custom_max'
+  ]);
+
+  const METHODOLOGY_BOOL_FIELDS = new Set([
+    'has_unique_logic_flag', 'has_system_calculations_flag', 'is_individual'
+  ]);
+
   // === Утилиты ===
 
   function fmtNumber(value, digits = 2) {
@@ -1036,8 +1144,28 @@ CFG_base определяется по cfg_type:
     document.querySelectorAll('[data-label-base]').forEach(el => {
       const base = el.getAttribute('data-label-base') || '';
       const code = el.getAttribute('data-label-code') || '';
-      el.textContent = labelWithCode(base, code);
+      const label = labelWithCode(base, code);
+      const target = el.querySelector('.label-text');
+      if (target) {
+        target.textContent = label;
+      } else {
+        el.textContent = label;
+      }
     });
+  }
+
+  function toggleCalcTableWidth() {
+    const wrapper = document.getElementById('calcTableWrapper');
+    const checked = document.getElementById('collapseCalcTable').checked;
+    if (wrapper) wrapper.classList.toggle('compressed-table', checked);
+  }
+
+  function toggleMethodologyTableWidth() {
+    const wrapper = document.getElementById('methodologyTableWrapper');
+    const checkbox = document.getElementById('collapseMethodologyTable');
+    if (wrapper && checkbox) {
+      wrapper.classList.toggle('compressed-table', checkbox.checked);
+    }
   }
 
   function bindGeneralControls() {
@@ -1075,8 +1203,16 @@ CFG_base определяется по cfg_type:
       updateTotalsLabels();
     });
 
-    document.getElementById('exportSummaryCsvBtn').addEventListener('click', exportSummaryCsv);
     document.getElementById('exportDetailCsvBtn').addEventListener('click', exportDetailCsv);
+
+    document.getElementById('addRowFromHeaderBtn').addEventListener('click', () => {
+      const firstGroup = Array.from(groupsMap.values())[0];
+      if (firstGroup) {
+        openElementModalForGroup(firstGroup.code);
+      } else {
+        openElementModalForGroup(null);
+      }
+    });
 
     document.getElementById('saveSnapshotBtn').addEventListener('click', saveSnapshot);
     document.getElementById('loadSnapshotBtn').addEventListener('click', () => {
@@ -1093,6 +1229,16 @@ CFG_base определяется по cfg_type:
     document.getElementById('methodologyOkBtn').addEventListener('click', () => {
       closeMethodologyModal();
     });
+
+    document.getElementById('exportMethodologyExcelBtn').addEventListener('click', exportMethodologyExcel);
+    document.getElementById('exportMethodologyJsonBtn').addEventListener('click', exportMethodologyJson);
+    document.getElementById('importMethodologyJsonBtn').addEventListener('click', () => {
+      document.getElementById('methodologyJsonInput').click();
+    });
+    document.getElementById('methodologyJsonInput').addEventListener('change', handleMethodologyJsonUpload);
+
+    document.getElementById('collapseCalcTable').addEventListener('change', toggleCalcTableWidth);
+    document.getElementById('collapseMethodologyTable').addEventListener('change', toggleMethodologyTableWidth);
 
     document.getElementById('kPlatformInput').addEventListener('input', () => {
       recalcTotals();
@@ -1171,7 +1317,6 @@ CFG_base определяется по cfg_type:
     document.getElementById('kPlatformInput').disabled = true;
     document.getElementById('openMethodologyBtn').disabled = true;
     document.getElementById('toggleShowCodes').disabled = true;
-    document.getElementById('exportSummaryCsvBtn').disabled = true;
     document.getElementById('exportDetailCsvBtn').disabled = true;
     document.getElementById('saveSnapshotBtn').disabled = true;
     document.getElementById('loadSnapshotBtn').disabled = true;
@@ -1185,6 +1330,8 @@ CFG_base определяется по cfg_type:
     updateMethodTitle();
     updateTotalsLabels();
     applyLabels();
+    toggleCalcTableWidth();
+    toggleMethodologyTableWidth();
 
     setTotals(0, 0, 0, 0, 0);
   }
@@ -1295,7 +1442,6 @@ CFG_base определяется по cfg_type:
     document.getElementById('kPlatformInput').disabled = false;
     document.getElementById('openMethodologyBtn').disabled = false;
     document.getElementById('toggleShowCodes').disabled = false;
-    document.getElementById('exportSummaryCsvBtn').disabled = false;
     document.getElementById('exportDetailCsvBtn').disabled = false;
     document.getElementById('saveSnapshotBtn').disabled = false;
     document.getElementById('loadSnapshotBtn').disabled = false;
@@ -1340,9 +1486,8 @@ CFG_base определяется по cfg_type:
       meta.className = 'section-card-meta';
       meta.innerHTML = `
         <div class="stat-line"><span>Строк методики:</span><span>${group.rows.length}</span></div>
-        <div class="stat-line"><span>Строк в таблице расчётов:</span><span data-role="row-count">0</span></div>
-        <div class="stat-line"><span>${labelWithCode('Трудоёмкость конфигурирования', 'CFG')} базовое:</span><span data-role="cfg-base">0</span></div>
-        <div class="stat-line"><span>Σ (без ${labelWithCode('Коэффициента платформы', 'K_platform')}):</span><span data-role="sum-no-k">0</span></div>
+        <div class="stat-line"><span>${labelWithCode('Трудоёмкость конфигурирования — CFG базовое', 'CFG')}:</span><span data-role="cfg-base">0</span></div>
+        <div class="stat-line"><span>Σ (без ${labelWithCode('K_platform', 'K_platform')}):</span><span data-role="sum-no-k">0</span></div>
       `;
       header.appendChild(meta);
 
@@ -1354,27 +1499,29 @@ CFG_base определяется по cfg_type:
       const hideId = `hide_${group.code}`;
       const onlyId = `only_${group.code}`;
       flags.innerHTML = `
-        <div style=\"display:flex;gap:10px;align-items:center;\">\
-          <label>\
+        <div style=\"display:flex;gap:12px;align-items:center;flex-wrap:wrap;\">\
+          <label style=\"display:flex;align-items:center;gap:6px;\">\
             <input type=\"checkbox\" id=\"${hideId}\"/>\
-            <span>Скрыть раздел</span>\
+            <span>Скрыть этот раздел</span>\
           </label>\
-          <label>\
+          <label style=\"display:flex;align-items:center;gap:6px;\">\
             <input type=\"checkbox\" id=\"${onlyId}\"/>\
-            <span>Только этот</span>\
+            <span>Показать только этот раздел</span>\
           </label>\
         </div>
       `;
-      const empty = document.createElement('div');
-      empty.className = 'empty-badge';
-      empty.textContent = 'Пустой раздел';
-      empty.dataset.role = 'empty-badge';
-      flags.appendChild(empty);
-
+      
       body.appendChild(flags);
 
-      const actions = document.createElement('div');
-      actions.className = 'section-card-actions';
+      const footer = document.createElement('div');
+      footer.className = 'section-card-footer';
+
+      const indicator = document.createElement('div');
+      indicator.className = 'empty-badge';
+      indicator.textContent = 'Пустой раздел';
+      indicator.dataset.role = 'empty-badge';
+      footer.appendChild(indicator);
+
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'button-primary button-sm';
@@ -1383,8 +1530,9 @@ CFG_base определяется по cfg_type:
       btn.addEventListener('click', () => {
         openElementModalForGroup(group.code);
       });
-      actions.appendChild(btn);
-      body.appendChild(actions);
+      footer.appendChild(btn);
+
+      body.appendChild(footer);
 
       card.appendChild(header);
       card.appendChild(body);
@@ -1466,7 +1614,12 @@ CFG_base определяется по cfg_type:
       if (sumSpan) sumSpan.textContent = fmtNumber(group.stats.totalWithoutK, 2);
       if (rowsSpan) rowsSpan.textContent = group.stats.itemsCount;
       if (emptyBadge) {
-        emptyBadge.style.display = group.stats.itemsCount === 0 ? 'inline-block' : 'none';
+        if (group.stats.itemsCount === 0) {
+          emptyBadge.textContent = 'Пустой раздел';
+        } else {
+          emptyBadge.textContent = `Строк в таблице: ${group.stats.itemsCount}`;
+        }
+        emptyBadge.style.display = 'inline-block';
       }
     });
   }
@@ -1478,8 +1631,14 @@ CFG_base определяется по cfg_type:
       alert('Сначала загрузите Excel-методику.');
       return;
     }
+    const firstGroup = Array.from(groupsMap.values())[0];
+    const targetGroupCode = groupCode || firstGroup?.code;
+    if (!targetGroupCode) {
+      alert('Нет доступных разделов для добавления элементов.');
+      return;
+    }
     editingItemId = null;
-    const group = groupsMap.get(groupCode);
+    const group = groupsMap.get(targetGroupCode);
     const sectionSelect = document.getElementById('elementSectionSelect');
     const typeSelect = document.getElementById('elementTypeSelect');
     const nameInput = document.getElementById('elementNameInput');
@@ -1499,12 +1658,12 @@ CFG_base определяется по cfg_type:
       const opt = document.createElement('option');
       opt.value = g.code;
       opt.textContent = g.name || g.code;
-      if (g.code === groupCode) opt.selected = true;
+      if (g.code === targetGroupCode) opt.selected = true;
       sectionSelect.appendChild(opt);
     });
 
     // заполнить список типов элементов для выбранного раздела
-    fillElementTypesForGroup(groupCode);
+    fillElementTypesForGroup(targetGroupCode);
 
     qtyInput.value = '1';
     cfgBaseInput.value = '';
@@ -1942,7 +2101,7 @@ CFG_base определяется по cfg_type:
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'action-icon';
-        editBtn.textContent = '📝';
+        editBtn.textContent = '✏️';
         editBtn.title = 'Редактировать';
         editBtn.addEventListener('click', () => openElementModalForEdit(item.id));
         tdActions.appendChild(editBtn);
@@ -1950,7 +2109,7 @@ CFG_base определяется по cfg_type:
         const dupBtn = document.createElement('button');
         dupBtn.type = 'button';
         dupBtn.className = 'action-icon';
-        dupBtn.textContent = '➕';
+        dupBtn.textContent = '📑';
         dupBtn.title = 'Дублировать';
         dupBtn.addEventListener('click', () => duplicateItem(item.id));
         tdActions.appendChild(dupBtn);
@@ -2027,44 +2186,61 @@ CFG_base определяется по cfg_type:
   function renderMethodologyTable() {
     const tbody = document.getElementById('methodologyTableBody');
     tbody.innerHTML = '';
-    methodologyRows.forEach(row => {
+    methodologyRows.forEach((row, rowIndex) => {
       const tr = document.createElement('tr');
 
-      function td(text, cls, digits) {
+      METHODOLOGY_COLUMNS.forEach(col => {
         const td = document.createElement('td');
-        if (cls) td.className = cls;
-        if (digits != null && text != null && text !== '') {
-          td.textContent = fmtNumber(text, digits);
+        td.contentEditable = 'true';
+        td.dataset.rowIndex = String(rowIndex);
+        td.dataset.field = col;
+        const value = row[col];
+        if (METHODOLOGY_NUMBER_FIELDS.has(col)) {
+          td.className = 'cell-number';
+          td.textContent = value == null ? '' : fmtNumber(value, 3);
+        } else if (METHODOLOGY_BOOL_FIELDS.has(col)) {
+          td.className = 'cell-number';
+          td.textContent = row[col] ? '1' : '0';
         } else {
-          td.textContent = text == null ? '' : String(text);
+          td.textContent = value == null ? '' : String(value);
         }
+        td.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            td.blur();
+          }
+        });
+        td.addEventListener('blur', handleMethodologyCellEdit);
         tr.appendChild(td);
-      }
-
-      td(row.group_code);
-      td(row.group_name);
-      td(row.element_code);
-      td(row.element_name);
-      td(row.cfg_type);
-      td(row.cfg_min, 'cell-number', 3);
-      td(row.cfg_max, 'cell-number', 3);
-      td(row.cfg_fixed, 'cell-number', 3);
-      td(row.ands_coeff, 'cell-number', 2);
-      td(row.test_coeff, 'cell-number', 2);
-      td(row.doc_coeff, 'cell-number', 2);
-      td(row.scaling_type);
-      td(row.base_value, 'cell-number', 3);
-      td(row.step, 'cell-number', 3);
-      td(row.delta_cfg, 'cell-number', 3);
-      td(row.multiplier, 'cell-number', 3);
-      td(row.pack_size, 'cell-number', 3);
-      td(row.has_unique_logic_flag ? '1' : '0', 'cell-number');
-      td(row.has_system_calculations_flag ? '1' : '0', 'cell-number');
-      td(row.is_individual ? '1' : '0', 'cell-number');
-      td(row.cfg_custom_max, 'cell-number', 3);
+      });
 
       tbody.appendChild(tr);
     });
+  }
+
+  function handleMethodologyCellEdit(event) {
+    const td = event.target;
+    const rowIndex = Number(td.dataset.rowIndex);
+    const field = td.dataset.field;
+    if (!Number.isInteger(rowIndex) || !field) return;
+
+    const row = methodologyRows[rowIndex];
+    if (!row) return;
+    const text = td.textContent?.trim() ?? '';
+
+    if (METHODOLOGY_NUMBER_FIELDS.has(field)) {
+      row[field] = text === '' ? null : safeNumber(text, null);
+      td.textContent = row[field] == null ? '' : fmtNumber(row[field], 3);
+    } else if (METHODOLOGY_BOOL_FIELDS.has(field)) {
+      row[field] = parseBoolFlag(text);
+      td.textContent = row[field] ? '1' : '0';
+    } else {
+      row[field] = text;
+    }
+
+    buildGroupsFromMethodology();
+    renderSectionsCards();
+    renderCalcTable();
   }
 
   function openMethodologyModal() {
@@ -2079,52 +2255,73 @@ CFG_base определяется по cfg_type:
     document.getElementById('methodologyModalBackdrop').style.display = 'none';
   }
 
-  // === Экспорт CSV ===
-
-  function exportSummaryCsv() {
-    if (calcItems.length === 0) {
-      alert('Нет данных для экспорта.');
+  function exportMethodologyExcel() {
+    if (methodologyRows.length === 0) {
+      alert('Нет данных методики для выгрузки.');
       return;
     }
-    const byGroup = new Map();
-    calcItems.forEach(item => {
-      const key = item.group_code;
-      let agg = byGroup.get(key);
-      if (!agg) {
-        agg = {
-          group_code: item.group_code,
-          group_name: item.group_name,
-          cfg: 0,
-          ands: 0,
-          test: 0,
-          doc: 0,
-          total: 0
-        };
-        byGroup.set(key, agg);
+    const rows = methodologyRows.map(({ _index, ...rest }) => rest);
+    const sheet = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, sheet, 'methodology');
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'methodology.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportMethodologyJson() {
+    if (methodologyRows.length === 0) {
+      alert('Нет данных методики для выгрузки.');
+      return;
+    }
+    const rows = methodologyRows.map(({ _index, ...rest }) => rest);
+    downloadFile('methodology.json', JSON.stringify(rows, null, 2), 'application/json');
+  }
+
+  function handleMethodologyJsonUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error('JSON не содержит данных методики.');
+        }
+        methodologyRows = data.map((r, idx) => {
+          const normalized = {};
+          METHODOLOGY_COLUMNS.forEach(col => {
+            if (METHODOLOGY_NUMBER_FIELDS.has(col)) {
+              normalized[col] = safeNumber(r[col], null);
+            } else if (METHODOLOGY_BOOL_FIELDS.has(col)) {
+              normalized[col] = parseBoolFlag(r[col]);
+            } else {
+              normalized[col] = r[col];
+            }
+          });
+          return { _index: idx, ...normalized };
+        });
+        buildGroupsFromMethodology();
+        hasMethodology = true;
+        onMethodologyLoaded();
+        renderMethodologyTable();
+        methodFileName = file.name || 'methodology.json';
+        document.getElementById('methodSuccessHint').style.display = 'block';
+        updateMethodTitle();
+      } catch (err) {
+        alert('Ошибка при загрузке JSON: ' + err.message);
+      } finally {
+        event.target.value = '';
       }
-      agg.cfg += item.eff_cfg || 0;
-      agg.ands += item.eff_ands || 0;
-      agg.test += item.eff_test || 0;
-      agg.doc += item.eff_doc || 0;
-      agg.total += item.eff_total || 0;
-    });
-
-    const rows = [];
-    rows.push(['group_code', 'group_name', 'CFG', 'ANDS', 'TEST', 'DOC', 'TOTAL']);
-    byGroup.forEach(agg => {
-      rows.push([
-        agg.group_code,
-        agg.group_name,
-        fmtNumber(agg.cfg, 2),
-        fmtNumber(agg.ands, 2),
-        fmtNumber(agg.test, 2),
-        fmtNumber(agg.doc, 2),
-        fmtNumber(agg.total, 2)
-      ]);
-    });
-
-    const csv = '\uFEFF' + rows.map(r => r.map(v => String(v).replace(/"/g, '""')).join(';')).join('\n');
-    downloadFile('calc_summary.csv', csv, 'text/csv;charset=utf-8');
+    };
+    reader.readAsText(file, 'utf-8');
   }
 
   function exportDetailCsv() {
@@ -2261,7 +2458,6 @@ CFG_base определяется по cfg_type:
     document.getElementById('kPlatformInput').disabled = false;
     document.getElementById('openMethodologyBtn').disabled = false;
     document.getElementById('toggleShowCodes').disabled = false;
-    document.getElementById('exportSummaryCsvBtn').disabled = false;
     document.getElementById('exportDetailCsvBtn').disabled = false;
     document.getElementById('saveSnapshotBtn').disabled = false;
     document.getElementById('loadSnapshotBtn').disabled = false;
