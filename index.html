@@ -189,12 +189,12 @@
     }
 
     #methodSection.section {
-      padding: 8px 12px;
+      padding: 6px 12px 8px;
     }
 
     .method-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 6px;
       grid-auto-rows: auto;
       align-items: end;
@@ -203,7 +203,8 @@
     .method-file-row {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
+      height: 100%;
     }
 
     .method-actions {
@@ -217,7 +218,7 @@
     }
 
     .method-hint {
-      grid-column: 1 / 2;
+      grid-column: 1 / -1;
     }
 
     .method-footer {
@@ -226,7 +227,7 @@
       align-items: flex-end;
       gap: 6px;
       width: 100%;
-      margin-top: 1px;
+      margin-top: 0;
     }
 
     .status-text {
@@ -382,6 +383,7 @@
       overflow: auto;
       max-height: 520px;
       background: #ffffff;
+      padding-right: 12px;
     }
     .methodology-table-wrapper {
       max-height: 400px;
@@ -417,6 +419,10 @@
       font-size: 11px;
       white-space: nowrap;
     }
+
+    .number-col {
+      text-align: center;
+    }
     tbody tr:nth-child(even) {
       background: #f9fafb;
     }
@@ -424,13 +430,14 @@
       background: #eff6ff;
     }
     .cell-number {
-      text-align: right;
+      text-align: center;
       white-space: nowrap;
     }
     .cell-actions {
       white-space: nowrap;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       height: 100%;
     }
@@ -771,6 +778,34 @@
       padding: 0;
     }
 
+    th:last-child,
+    td:last-child {
+      padding-right: 14px;
+    }
+
+    .table-topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+
+    .table-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+
+    .table-counter {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
     #elementCommentInput {
       min-height: 30px;
       height: 40px;
@@ -917,41 +952,43 @@
     <div class="section-header">
       <div>
         <h2>Таблица расчётов</h2>
-        <small>Строки добавляются через карточки разделов и модальное окно элемента</small>
       </div>
-      <span class="badge" id="rowsSummaryBadge">Строк: 0</span>
     </div>
     <div class="section-body">
-      <div class="controls-row" style="margin-bottom:6px;">
-        <label class="toggle-switch">
-          <input type="checkbox" id="collapseCalcTable" checked>
-          <span>Сжать таблицу по ширине</span>
-        </label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="collapseCalcTableHeight" checked>
-          <span>Сжать таблицу по высоте</span>
-        </label>
+      <div class="table-topbar">
+        <div class="table-topbar-right">
+          <span class="table-counter">Количество разделов: <span id="calcSectionsCount">0</span></span>
+          <span class="table-counter">Количество строк: <span id="calcRowsCount">0</span></span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="collapseCalcTable" checked>
+            <span>Сжать таблицу по ширине</span>
+          </label>
+          <label class="toggle-switch">
+            <input type="checkbox" id="collapseCalcTableHeight" checked>
+            <span>Сжать таблицу по высоте</span>
+          </label>
+        </div>
       </div>
       <div class="table-wrapper" id="calcTableWrapper">
         <table id="calcTable">
           <thead>
           <tr>
-            <th>№</th>
+            <th class="number-col">№</th>
             <th>Раздел</th>
             <th>Элемент (код + имя)</th>
-            <th data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i"><span class="label-text">k_i</span><br/><span class="muted">коэффициент</span></th>
-            <th>Кол-во</th>
-            <th data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i"><span class="label-text">k_i</span><br/><span class="muted">коэффициент</span></th>
+            <th class="number-col">Кол-во</th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
             <th>Комментарий</th>
-            <th>Действия</th>
+            <th class="number-col">Действия</th>
           </tr>
           </thead>
           <tbody id="calcTableBody">
@@ -1509,6 +1546,13 @@ CFG_base определяется по cfg_type:
     document.getElementById('totalOverallLabel').textContent = labelWithCode('Итоговая трудоёмкость', 'TOTAL') + ' (с учётом ' + labelWithCode('Коэффициента платформы', 'K_platform') + ')';
   }
 
+  function updateCalcCounters() {
+    const rowsEl = document.getElementById('calcRowsCount');
+    const sectionsEl = document.getElementById('calcSectionsCount');
+    if (rowsEl) rowsEl.textContent = calcItems.length;
+    if (sectionsEl) sectionsEl.textContent = groupsMap.size;
+  }
+
   function resetState() {
     methodologyRows = [];
     groupsMap.clear();
@@ -1523,7 +1567,6 @@ CFG_base определяется по cfg_type:
 
     document.getElementById('methodStatusBadge').textContent = 'Методика не загружена';
     document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: 0';
-    document.getElementById('rowsSummaryBadge').textContent = 'Строк: 0';
 
     document.getElementById('sectionsContainer').innerHTML = '';
     document.getElementById('noSectionsHint').classList.remove('hidden');
@@ -1546,8 +1589,10 @@ CFG_base определяется по cfg_type:
     updateProjectTitle();
     updateMethodTitle();
     updateTotalsLabels();
+    updateCalcCounters();
     applyLabels();
     toggleCalcTableWidth();
+    toggleCalcTableHeight();
     toggleMethodologyTableWidth();
 
     setTotals(0, 0, 0, 0, 0);
@@ -1679,10 +1724,12 @@ CFG_base определяется по cfg_type:
     if (groups.length === 0) {
       document.getElementById('noSectionsHint').classList.remove('hidden');
       document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: 0';
+      updateCalcCounters();
       return;
     }
     document.getElementById('noSectionsHint').classList.add('hidden');
     document.getElementById('sectionsSummaryBadge').textContent = 'Разделы: ' + groups.length;
+    updateCalcCounters();
 
     groups.forEach(group => {
       const card = document.createElement('div');
@@ -1703,8 +1750,8 @@ CFG_base определяется по cfg_type:
       meta.className = 'section-card-meta';
       meta.innerHTML = `
         <div class="stat-line"><span>Строк методики:</span><span>${group.rows.length}</span></div>
-        <div class="stat-line"><span>${labelWithCode('Трудоёмкость конфигурирования — CFG базовое', 'CFG')}:</span><span data-role="cfg-base">0</span></div>
-        <div class="stat-line"><span>Σ (без ${labelWithCode('K_platform', 'K_platform')}):</span><span data-role="sum-no-k">0</span></div>
+        <div class="stat-line"><span>Трудоёмкость конфигурирования (${labelWithCode('CFG', 'CFG')}):</span><span data-role="cfg-base">0</span><span class="total-card-unit">чел-дни</span></div>
+        <div class="stat-line"><span>Итоговая трудоёмкость (без коэф-та платформы):</span><span data-role="sum-no-k">0</span><span class="total-card-unit">чел-дни</span></div>
       `;
       header.appendChild(meta);
 
@@ -2140,7 +2187,6 @@ CFG_base определяется по cfg_type:
     closeElementModal();
     renderCalcTable();
     recalcGroupStats();
-    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
   }
 
   function openElementModalForEdit(itemId) {
@@ -2240,7 +2286,7 @@ CFG_base определяется по cfg_type:
       const totalBadge = document.createElement('span');
       totalBadge.className = 'group-stat-badge';
       const groupTotal = items.reduce((acc, it) => acc + (it.eff_total || 0), 0);
-      totalBadge.textContent = `Итого трудоёмкость раздела: ${fmtNumber(groupTotal, 2)} чел.-дн.`;
+      totalBadge.textContent = `Итого трудоёмкость раздела: ${fmtNumber(groupTotal, 2)} чел-дни`;
       statsWrap.appendChild(rowsBadge);
       statsWrap.appendChild(totalBadge);
 
@@ -2372,7 +2418,6 @@ CFG_base определяется по cfg_type:
             calcItems = calcItems.filter(x => x.id !== item.id);
             renderCalcTable();
             recalcGroupStats();
-            document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
           }
         });
         tdActions.appendChild(delBtn);
@@ -2385,6 +2430,7 @@ CFG_base определяется по cfg_type:
 
     recalcTotals();
     recalcGroupStats();
+    updateCalcCounters();
   }
 
   function duplicateItem(itemId) {
@@ -2394,7 +2440,6 @@ CFG_base определяется по cfg_type:
     calcItems.push(copy);
     renderCalcTable();
     recalcGroupStats();
-    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
   }
 
   function recalcTotals() {
@@ -2698,7 +2743,6 @@ CFG_base определяется по cfg_type:
         applyMetaState(json.meta || {});
     renderCalcTable();
     recalcGroupStats();
-    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
 
     document.getElementById('methodStatusBadge').textContent = 'Методика загружена (из снапшота)';
     methodFileName = file.name || 'Снапшот';
