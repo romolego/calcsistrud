@@ -193,16 +193,16 @@
     }
 
     .method-layout {
-      display: flex;
-      gap: 6px;
-      align-items: flex-end;
-      justify-content: space-between;
-      flex-wrap: nowrap;
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      width: 100%;
+      overflow-x: auto;
     }
 
     .method-file-row,
     .method-actions {
-      width: 45%;
       min-width: 0;
       display: flex;
       align-items: flex-end;
@@ -211,15 +211,14 @@
     .method-file-row {
       flex-direction: column;
       gap: 3px;
-      height: 100%;
     }
 
     .method-actions {
-      height: 100%;
+      justify-content: flex-end;
     }
 
     .method-actions .button-secondary {
-      width: 100%;
+      white-space: nowrap;
     }
 
     .method-hint {
@@ -440,11 +439,12 @@
     }
     .cell-actions {
       white-space: nowrap;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
       height: 100%;
+      width: 100%;
     }
     .cell-muted {
       color: var(--muted);
@@ -777,8 +777,9 @@
 
     .compressed-table .cell-actions {
       display: inline-flex;
-      gap: 2px;
+      gap: 4px;
       align-items: center;
+      justify-content: center;
     }
 
     .compressed-table .action-icon {
@@ -791,14 +792,14 @@
       align-items: center;
       justify-content: center;
       line-height: 1;
-      height: 26px;
-      width: 26px;
+      height: 24px;
+      width: 24px;
       padding: 0;
     }
 
     th:last-child,
     td:last-child {
-      padding-right: 14px;
+      padding-right: 8px;
     }
 
   .table-topbar {
@@ -864,11 +865,10 @@
   </style>
 </head>
 <body>
-<div class="page">
-  <header class="page-header">
-    <h1>Калькулятор трудозатрат по конфигурированию</h1>
-    <p>Одностраничный калькулятор трудоёмкости конфигурирования по методике, загружаемой из Excel-файла. Все расчёты выполняются локально в браузере, без серверной части.</p>
-  </header>
+  <div class="page">
+    <header class="page-header">
+      <h1>Калькулятор трудозатрат по конфигурированию</h1>
+    </header>
 
   <!-- Реквизиты проекта -->
   <section class="section" id="project-section">
@@ -991,17 +991,17 @@
             <th class="number-col">№</th>
             <th>Раздел</th>
             <th>Элемент (код + имя)</th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (чел./дн.)</span></th>
             <th class="number-col" data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i"><span class="label-text">k_i</span><br/><span class="muted">коэффициент</span></th>
             <th class="number-col">Кол-во</th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
-            <th class="number-col" data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (чел./дн.)</span></th>
+            <th class="number-col" data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (чел./дн.)</span></th>
             <th>Комментарий</th>
             <th class="number-col">Действия</th>
           </tr>
