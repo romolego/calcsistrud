@@ -188,23 +188,28 @@
       margin-top: 4px;
     }
 
+    #methodSection.section {
+      padding: 8px 12px;
+    }
+
     .method-layout {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
       grid-auto-rows: auto;
-      align-items: start;
+      align-items: end;
     }
 
     .method-file-row {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .method-actions {
       display: flex;
       align-items: flex-end;
+      height: 100%;
     }
 
     .method-actions .button-secondary {
@@ -217,11 +222,11 @@
 
     .method-footer {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) minmax(0, auto);
       align-items: flex-end;
-      gap: 12px;
+      gap: 6px;
       width: 100%;
-      margin-top: 4px;
+      margin-top: 1px;
     }
 
     .status-text {
@@ -348,9 +353,17 @@
     }
     .section-card-actions {
       display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .section-card-actions .actions-row {
+      display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: auto;
+      gap: 8px;
+      flex-wrap: wrap;
     }
     .empty-badge {
       display: inline-block;
@@ -748,6 +761,21 @@
       padding: 2px 4px;
     }
 
+    .action-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      height: 26px;
+      width: 26px;
+      padding: 0;
+    }
+
+    #elementCommentInput {
+      min-height: 30px;
+      height: 40px;
+    }
+
     .section-card.inactive {
       opacity: 0.65;
       filter: grayscale(0.2);
@@ -946,23 +974,23 @@
       <div class="totals-row">
         <div class="total-card">
           <div class="total-card-label" id="totalCfgLabel">CFG (суммарно по элементам)</div>
-          <div class="total-card-value"><span id="totalCfg">0</span><span class="total-card-unit">человеко-часы</span></div>
+          <div class="total-card-value"><span id="totalCfg">0</span><span class="total-card-unit">человеко-дни</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalAndsLabel">ANDS</div>
-          <div class="total-card-value"><span id="totalAnds">0</span><span class="total-card-unit">человеко-часы</span></div>
+          <div class="total-card-value"><span id="totalAnds">0</span><span class="total-card-unit">человеко-дни</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalTestLabel">TEST</div>
-          <div class="total-card-value"><span id="totalTest">0</span><span class="total-card-unit">человеко-часы</span></div>
+          <div class="total-card-value"><span id="totalTest">0</span><span class="total-card-unit">человеко-дни</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalDocLabel">DOC</div>
-          <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">человеко-часы</span></div>
+          <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">человеко-дни</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalOverallLabel">TOTAL (с учётом K_platform)</div>
-          <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">человеко-часы</span></div>
+          <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">человеко-дни</span></div>
         </div>
       </div>
     </div>
@@ -1063,7 +1091,7 @@
             </label>
           </div>
         </div>
-        <div class="field" style="flex:1 1 200px;max-width:340px;">
+        <div class="field" style="flex:2 1 200px;max-width:680px;">
           <label for="elementCommentInput">Комментарий</label>
           <textarea id="elementCommentInput" placeholder="Обязательно для индивидуальных элементов (cfg_type = individual)"></textarea>
         </div>
@@ -1136,10 +1164,6 @@ CFG_base определяется по cfg_type:
         <label class="toggle-switch">
           <input type="checkbox" id="collapseMethodologyTable" checked>
           <span>Сжать таблицу по ширине</span>
-        </label>
-        <label class="toggle-switch">
-          <input type="checkbox" id="methodologyFullHeight" checked>
-          <span>Вывести на всю высоту</span>
         </label>
         <div style="margin-left:auto;display:flex;gap:6px;">
           <button type="button" class="button-secondary" id="exportMethodologyExcelBtn">Выгрузить Excel</button>
@@ -1359,18 +1383,6 @@ CFG_base определяется по cfg_type:
     }
   }
 
-  function toggleMethodologyHeight() {
-    const wrapper = document.getElementById('methodologyTableWrapper');
-    const modal = document.getElementById('methodologyModal');
-    const checkbox = document.getElementById('methodologyFullHeight');
-    if (wrapper && checkbox) {
-      wrapper.classList.toggle('no-height-limit', checkbox.checked);
-    }
-    if (modal && checkbox) {
-      modal.classList.toggle('full-height', checkbox.checked);
-    }
-  }
-
   function bindGeneralControls() {
     document.getElementById('toggleProjectMetaBtn').addEventListener('click', () => {
       const body = document.getElementById('projectMetaBody');
@@ -1437,7 +1449,6 @@ CFG_base определяется по cfg_type:
     document.getElementById('collapseCalcTable').addEventListener('change', toggleCalcTableWidth);
     document.getElementById('collapseCalcTableHeight').addEventListener('change', toggleCalcTableHeight);
     document.getElementById('collapseMethodologyTable').addEventListener('change', toggleMethodologyTableWidth);
-    document.getElementById('methodologyFullHeight').addEventListener('change', toggleMethodologyHeight);
 
     document.getElementById('kPlatformInput').addEventListener('input', () => {
       recalcTotals();
@@ -1457,7 +1468,6 @@ CFG_base определяется по cfg_type:
     toggleCalcTableWidth();
     toggleCalcTableHeight();
     toggleMethodologyTableWidth();
-    toggleMethodologyHeight();
   }
 
   function updateProjectTitle() {
@@ -1717,11 +1727,13 @@ CFG_base определяется по cfg_type:
           </label>\
         </div>
       `;
-      
-      body.appendChild(flags);
+
+      const actions = document.createElement('div');
+      actions.className = 'section-card-actions';
+      actions.appendChild(flags);
 
       const footer = document.createElement('div');
-      footer.className = 'section-card-footer';
+      footer.className = 'section-card-footer actions-row';
 
       const indicator = document.createElement('div');
       indicator.className = 'empty-badge';
@@ -1740,7 +1752,8 @@ CFG_base определяется по cfg_type:
       });
       footer.appendChild(btn);
 
-      body.appendChild(footer);
+      actions.appendChild(footer);
+      body.appendChild(actions);
 
       card.appendChild(header);
       card.appendChild(body);
@@ -1875,6 +1888,13 @@ CFG_base определяется по cfg_type:
     const flagSystem = document.getElementById('flagSystemCalcInput');
     const commentInput = document.getElementById('elementCommentInput');
 
+    qtyInput.value = '1';
+    valueInput.value = '0';
+    flagUnique.checked = false;
+    flagSystem.checked = false;
+    commentInput.value = '';
+    nameInput.value = '';
+
     // заполнить список разделов
     sectionSelect.innerHTML = '';
     Array.from(groupsMap.values()).forEach(g => {
@@ -1887,17 +1907,6 @@ CFG_base определяется по cfg_type:
 
     // заполнить список типов элементов для выбранного раздела
     fillElementTypesForGroup(targetGroupCode);
-
-    qtyInput.value = '1';
-    cfgBaseInput.value = '';
-    valueInput.value = '0';
-    kAndsInput.value = '';
-    kTestInput.value = '';
-    kDocInput.value = '';
-    flagUnique.checked = false;
-    flagSystem.checked = false;
-    commentInput.value = '';
-    nameInput.value = '';
 
     document.getElementById('elementModalBackdrop').style.display = 'flex';
   }
@@ -2219,15 +2228,12 @@ CFG_base определяется по cfg_type:
       addButton.title = 'Добавить элемент в раздел';
       addButton.addEventListener('click', () => openElementModalForGroup(group.code));
       const groupTitle = document.createElement('span');
-      groupTitle.textContent = labelWithCode(group.name || group.code, group.code);
+      groupTitle.textContent = group.name || group.code;
       groupHeaderContent.appendChild(addButton);
       groupHeaderContent.appendChild(groupTitle);
 
       const statsWrap = document.createElement('div');
       statsWrap.className = 'group-stats';
-      const methodBadge = document.createElement('span');
-      methodBadge.className = 'group-stat-badge';
-      methodBadge.textContent = `Строк методики: ${group.rows.length}`;
       const rowsBadge = document.createElement('span');
       rowsBadge.className = 'group-stat-badge';
       rowsBadge.textContent = `Строк в таблице расчётов: ${items.length}`;
@@ -2235,7 +2241,6 @@ CFG_base определяется по cfg_type:
       totalBadge.className = 'group-stat-badge';
       const groupTotal = items.reduce((acc, it) => acc + (it.eff_total || 0), 0);
       totalBadge.textContent = `Итого трудоёмкость раздела: ${fmtNumber(groupTotal, 2)} чел.-дн.`;
-      statsWrap.appendChild(methodBadge);
       statsWrap.appendChild(rowsBadge);
       statsWrap.appendChild(totalBadge);
 
@@ -2492,7 +2497,6 @@ CFG_base определяется по cfg_type:
       return;
     }
     toggleMethodologyTableWidth();
-    toggleMethodologyHeight();
     document.getElementById('methodologyModalBackdrop').style.display = 'flex';
   }
 
