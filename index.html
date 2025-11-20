@@ -1435,7 +1435,12 @@ CFG_base определяется по cfg_type:
 
   function safeNumber(v, def = 0) {
     if (v === '' || v == null) return def;
-    const n = Number(v);
+
+    const normalized = typeof v === 'string'
+      ? v.replace(/\s+/g, '').replace(',', '.')
+      : v;
+
+    const n = Number(normalized);
     return isFinite(n) ? n : def;
   }
 
