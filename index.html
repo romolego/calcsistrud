@@ -196,13 +196,13 @@
     .section-card {
       position: relative;
       border-radius: 10px;
-      padding: 8px 10px 10px;
+      padding: 10px 12px 12px;
       border: 1px solid var(--border);
       background: linear-gradient(135deg, #e0f2fe, #f9fafb);
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      min-height: 96px;
+      gap: 8px;
+      min-height: 160px;
     }
     .section-card-header {
       display: flex;
@@ -227,24 +227,25 @@
       justify-content: space-between;
       align-items: flex-end;
       gap: 6px;
-      margin-top: 4px;
+      margin-top: auto;
     }
     .section-card-flags {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 6px;
       font-size: 11px;
     }
     .section-card-flags label {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       cursor: pointer;
     }
     .section-card-actions {
       display: flex;
       justify-content: flex-end;
       align-items: flex-end;
+      align-self: flex-end;
     }
     .empty-badge {
       display: inline-block;
@@ -476,6 +477,60 @@
       font-size: 10px;
       color: var(--muted);
     }
+
+    .extras-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+    .extra-card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .extra-card h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .action-icon {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 6px;
+      border-radius: 6px;
+    }
+    .action-icon:hover {
+      background: #e2e8f0;
+    }
+
+    .group-header-row td {
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .section-card.inactive {
+      opacity: 0.65;
+      filter: grayscale(0.2);
+    }
+    .section-card.inactive .button-primary {
+      opacity: 0.8;
+    }
+
+    .section-card-meta .stat-line {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+    .section-card-meta .stat-line span:first-child {
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
@@ -489,7 +544,7 @@
   <section class="section" id="project-section">
     <div class="section-header">
       <div>
-        <h2>Реквизиты проекта</h2>
+        <h2 id="projectTitle">Реквизиты проекта</h2>
         <small>Общая информация о расчёте</small>
       </div>
       <button type="button" class="section-toggle" id="toggleProjectMetaBtn">Свернуть</button>
@@ -523,24 +578,36 @@
   </section>
 
   <!-- Загрузка методики -->
-  <section class="section">
+  <section class="section" id="methodSection">
     <div class="section-header">
       <div>
-        <h2>Загрузка методики (Excel)</h2>
+        <h2 id="methodTitle">Загрузка методики (Excel)</h2>
         <small>Главный запуск работы калькулятора</small>
       </div>
-      <span class="badge" id="methodStatusBadge">Методика не загружена</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge" id="methodStatusBadge">Методика не загружена</span>
+        <button type="button" class="section-toggle" id="toggleMethodSectionBtn">Свернуть</button>
+      </div>
     </div>
-    <div class="section-body">
-      <div class="field-row">
-        <div class="field">
-          <label for="excelInput">Файл методики (.xlsx)</label>
-          <input id="excelInput" type="file" accept=".xlsx"/>
-          <div class="upload-hint">
-            После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
-            Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
-          </div>
+    <div class="section-body" id="methodSectionBody">
+      <div class="field" style="margin-bottom:12px;">
+        <label for="excelInput">Файл методики (.xlsx)</label>
+        <input id="excelInput" type="file" accept=".xlsx"/>
+        <div class="upload-hint">
+          После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
+          Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
         </div>
+        <div class="upload-hint" id="methodSuccessHint" style="margin-top:6px;color:var(--ok);display:none;">Файл успешно загружен.</div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
+        <span class="upload-hint">Открывает модальное окно со всем каталогом методики (строки Excel).</span>
+      </div>
+
+      <div class="field" style="max-width:260px;">
+        <label for="kPlatformInput" data-label-base="Коэффициент платформы" data-label-code="K_platform">Коэффициент платформы (K_platform)</label>
+        <input id="kPlatformInput" type="number" step="0.01" value="1" disabled/>
       </div>
     </div>
   </section>
@@ -581,17 +648,17 @@
             <th>№</th>
             <th>Раздел</th>
             <th>Элемент (код + имя)</th>
-            <th>CFG базовое</th>
-            <th>k_ANDS</th>
-            <th>k_TEST</th>
-            <th>k_DOC</th>
-            <th>k_i</th>
+            <th data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG">CFG базовое</th>
+            <th data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS">k_ANDS</th>
+            <th data-label-base="Тестирование (коэффициент)" data-label-code="TEST">k_TEST</th>
+            <th data-label-base="Документирование (коэффициент)" data-label-code="DOC">k_DOC</th>
+            <th data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i">k_i</th>
             <th>Кол-во</th>
-            <th>CFG итог TOTAL<br/>(без K_platform)</th>
-            <th>CFG фаза</th>
-            <th>ANDS фаза</th>
-            <th>TEST фаза</th>
-            <th>DOC фаза</th>
+            <th data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG">CFG итог TOTAL<br/>(без K_platform)</th>
+            <th data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG">CFG фаза</th>
+            <th data-label-base="Анализ и проектирование" data-label-code="ANDS">ANDS фаза</th>
+            <th data-label-base="Тестирование" data-label-code="TEST">TEST фаза</th>
+            <th data-label-base="Документирование" data-label-code="DOC">DOC фаза</th>
             <th>Комментарий</th>
             <th>Действия</th>
           </tr>
@@ -600,35 +667,6 @@
           <!-- Строки создаются динамически -->
           </tbody>
         </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- Параметры расчёта и методика -->
-  <section class="section">
-    <div class="section-header">
-      <div>
-        <h2>Параметры расчёта</h2>
-        <small>Глобальный коэффициент платформы и исходные данные методики</small>
-      </div>
-    </div>
-    <div class="section-body">
-      <div class="field-row">
-        <div class="field" style="max-width:220px;">
-          <label for="kPlatformInput">K_platform</label>
-          <input id="kPlatformInput" type="number" step="0.01" value="1" disabled/>
-        </div>
-        <div class="field" style="flex:2 1 260px;">
-          <label>Пояснение</label>
-          <div class="upload-hint">
-            Параметр K_platform масштабирует итоговую трудоёмкость проекта (TOTAL = Σ Eff_TOTAL_element × K_platform).<br/>
-            При K_platform = 1 итоговая трудоёмкость равна сумме элементных трудозатрат.
-          </div>
-        </div>
-      </div>
-      <div class="controls-row">
-        <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
-        <span class="upload-hint">Открывает модальное окно со всем каталогом методики (строки Excel).</span>
       </div>
     </div>
   </section>
@@ -644,23 +682,23 @@
     <div class="section-body">
       <div class="totals-row">
         <div class="total-card">
-          <div class="total-card-label">CFG (суммарно по элементам)</div>
+          <div class="total-card-label" id="totalCfgLabel">CFG (суммарно по элементам)</div>
           <div class="total-card-value" id="totalCfg">0</div>
         </div>
         <div class="total-card">
-          <div class="total-card-label">ANDS</div>
+          <div class="total-card-label" id="totalAndsLabel">ANDS</div>
           <div class="total-card-value" id="totalAnds">0</div>
         </div>
         <div class="total-card">
-          <div class="total-card-label">TEST</div>
+          <div class="total-card-label" id="totalTestLabel">TEST</div>
           <div class="total-card-value" id="totalTest">0</div>
         </div>
         <div class="total-card">
-          <div class="total-card-label">DOC</div>
+          <div class="total-card-label" id="totalDocLabel">DOC</div>
           <div class="total-card-value" id="totalDoc">0</div>
         </div>
         <div class="total-card">
-          <div class="total-card-label">TOTAL (с учётом K_platform)</div>
+          <div class="total-card-label" id="totalOverallLabel">TOTAL (с учётом K_platform)</div>
           <div class="total-card-value" id="totalOverall">0</div>
         </div>
       </div>
@@ -677,27 +715,16 @@
       <button type="button" class="section-toggle" id="toggleExtrasBtn">Свернуть</button>
     </div>
     <div class="section-body" id="extrasBody">
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h3 style="font-size:13px;">Отображение</h3>
-          </div>
-        </div>
-        <div class="section-body">
+      <div class="extras-grid">
+        <div class="extra-card">
+          <h3>Настройки отображения</h3>
           <label class="toggle-switch">
             <input type="checkbox" id="toggleShowCodes" disabled/>
             <span>Показывать коды элементов</span>
           </label>
         </div>
-      </div>
-
-      <div class="section" style="margin-top:8px;">
-        <div class="section-header">
-          <div>
-            <h3 style="font-size:13px;">Экспорт / импорт</h3>
-          </div>
-        </div>
-        <div class="section-body">
+        <div class="extra-card">
+          <h3>Экспорт / импорт</h3>
           <div class="controls-row">
             <div class="controls-group">
               <span class="controls-group-label">CSV:</span>
@@ -751,7 +778,7 @@
           <input id="elementQtyInput" type="number" min="1" step="1" value="1"/>
         </div>
         <div class="field">
-          <label for="cfgBaseInput">CFG базовое</label>
+          <label for="cfgBaseInput" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG">Трудоёмкость конфигурирования (CFG) базовое</label>
           <input id="cfgBaseInput" type="number" step="0.001"/>
         </div>
         <div class="field">
@@ -762,15 +789,15 @@
 
       <div class="field-row">
         <div class="field">
-          <label for="kAndsInput">k_ANDS</label>
+          <label for="kAndsInput" data-label-base="Анализ и проектирование" data-label-code="ANDS">Анализ и проектирование (ANDS)</label>
           <input id="kAndsInput" type="number" step="0.01"/>
         </div>
         <div class="field">
-          <label for="kTestInput">k_TEST</label>
+          <label for="kTestInput" data-label-base="Тестирование" data-label-code="TEST">Тестирование (TEST)</label>
           <input id="kTestInput" type="number" step="0.01"/>
         </div>
         <div class="field">
-          <label for="kDocInput">k_DOC</label>
+          <label for="kDocInput" data-label-base="Документирование" data-label-code="DOC">Документирование (DOC)</label>
           <input id="kDocInput" type="number" step="0.01"/>
         </div>
       </div>
@@ -910,6 +937,8 @@ CFG_base определяется по cfg_type:
   let hasMethodology = false;
   let showCodes = false;
   let editingItemId = null;
+  let methodFileName = '';
+  let activeOnlyGroup = null;
 
   let nextItemId = 1;
 
@@ -950,16 +979,19 @@ CFG_base определяется по cfg_type:
     return Number(value).toFixed(digits);
   }
 
-  function randomColorFromCode(code) {
+  function colorPaletteFromCode(code) {
     let hash = 0;
     for (let i = 0; i < code.length; i++) {
       hash = ((hash << 5) - hash) + code.charCodeAt(i);
       hash |= 0;
     }
     const h = (hash % 360 + 360) % 360;
-    const s = 60;
-    const l = 92;
-    return `linear-gradient(135deg, hsl(${h},${s}%,${l}%), #ffffff)`;
+    return {
+      header: `hsl(${h},70%,90%)`,
+      soft: `hsl(${h},70%,96%)`,
+      border: `hsl(${h},65%,76%)`,
+      accent: `linear-gradient(135deg, hsl(${h},70%,90%), #ffffff)`
+    };
   }
 
   function downloadFile(filename, content, mime = 'text/plain;charset=utf-8') {
@@ -987,12 +1019,26 @@ CFG_base определяется по cfg_type:
     return isFinite(n) ? n : def;
   }
 
+  function labelWithCode(base, code) {
+    if (!code) return base;
+    return showCodes ? `${base} — ${code}` : base;
+  }
+
   // === Инициализация ===
 
   document.addEventListener('DOMContentLoaded', () => {
     bindGeneralControls();
     resetState();
+    applyLabels();
   });
+
+  function applyLabels() {
+    document.querySelectorAll('[data-label-base]').forEach(el => {
+      const base = el.getAttribute('data-label-base') || '';
+      const code = el.getAttribute('data-label-code') || '';
+      el.textContent = labelWithCode(base, code);
+    });
+  }
 
   function bindGeneralControls() {
     document.getElementById('toggleProjectMetaBtn').addEventListener('click', () => {
@@ -1000,6 +1046,16 @@ CFG_base определяется по cfg_type:
       const btn = document.getElementById('toggleProjectMetaBtn');
       const hidden = body.classList.toggle('hidden');
       btn.textContent = hidden ? 'Развернуть' : 'Свернуть';
+      updateProjectTitle();
+    });
+
+    document.getElementById('projectName').addEventListener('input', updateProjectTitle);
+
+    document.getElementById('toggleMethodSectionBtn').addEventListener('click', () => {
+      const body = document.getElementById('methodSectionBody');
+      const hidden = body.classList.toggle('hidden');
+      document.getElementById('toggleMethodSectionBtn').textContent = hidden ? 'Развернуть' : 'Свернуть';
+      updateMethodTitle();
     });
 
     document.getElementById('toggleExtrasBtn').addEventListener('click', () => {
@@ -1013,7 +1069,10 @@ CFG_base определяется по cfg_type:
 
     document.getElementById('toggleShowCodes').addEventListener('change', (e) => {
       showCodes = e.target.checked;
+      applyLabels();
+      renderSectionsCards();
       renderCalcTable();
+      updateTotalsLabels();
     });
 
     document.getElementById('exportSummaryCsvBtn').addEventListener('click', exportSummaryCsv);
@@ -1051,6 +1110,45 @@ CFG_base определяется по cfg_type:
     document.getElementById('elementTypeSelect').addEventListener('change', handleElementTypeChange);
   }
 
+  function updateProjectTitle() {
+    const name = (document.getElementById('projectName').value || '').trim();
+    const bodyHidden = document.getElementById('projectMetaBody').classList.contains('hidden');
+    const title = document.getElementById('projectTitle');
+    if (bodyHidden && name) {
+      title.textContent = `Реквизиты проекта — ${name}`;
+    } else {
+      title.textContent = 'Реквизиты проекта';
+    }
+  }
+
+  function updateMethodTitle() {
+    const bodyHidden = document.getElementById('methodSectionBody').classList.contains('hidden');
+    const title = document.getElementById('methodTitle');
+    if (bodyHidden && methodFileName) {
+      title.textContent = `Загрузка методики (Excel) — ${methodFileName}`;
+    } else {
+      title.textContent = 'Загрузка методики (Excel)';
+    }
+  }
+
+  function setDefaultProjectMeta() {
+    const today = new Date();
+    const iso = today.toISOString().slice(0, 10);
+    document.getElementById('calcDate').value = iso;
+    document.getElementById('calcVersion').value = '1';
+    document.getElementById('executor').value = 'ООО «Сибирские интеграционные системы»';
+    document.getElementById('projectName').value = '';
+    document.getElementById('customer').value = '';
+  }
+
+  function updateTotalsLabels() {
+    document.getElementById('totalCfgLabel').textContent = labelWithCode('Трудоёмкость конфигурирования', 'CFG');
+    document.getElementById('totalAndsLabel').textContent = labelWithCode('Анализ и проектирование', 'ANDS');
+    document.getElementById('totalTestLabel').textContent = labelWithCode('Тестирование', 'TEST');
+    document.getElementById('totalDocLabel').textContent = labelWithCode('Документирование', 'DOC');
+    document.getElementById('totalOverallLabel').textContent = labelWithCode('Итоговая трудоёмкость', 'TOTAL') + ' (с учётом ' + labelWithCode('Коэффициента платформы', 'K_platform') + ')';
+  }
+
   function resetState() {
     methodologyRows = [];
     groupsMap.clear();
@@ -1058,6 +1156,8 @@ CFG_base определяется по cfg_type:
     hasMethodology = false;
     showCodes = false;
     editingItemId = null;
+    methodFileName = '';
+    activeOnlyGroup = null;
     nextItemId = 1;
 
     document.getElementById('methodStatusBadge').textContent = 'Методика не загружена';
@@ -1076,6 +1176,16 @@ CFG_base определяется по cfg_type:
     document.getElementById('saveSnapshotBtn').disabled = true;
     document.getElementById('loadSnapshotBtn').disabled = true;
 
+    document.getElementById('methodSectionBody').classList.remove('hidden');
+    document.getElementById('toggleMethodSectionBtn').textContent = 'Свернуть';
+    document.getElementById('methodSuccessHint').style.display = 'none';
+
+    setDefaultProjectMeta();
+    updateProjectTitle();
+    updateMethodTitle();
+    updateTotalsLabels();
+    applyLabels();
+
     setTotals(0, 0, 0, 0, 0);
   }
 
@@ -1084,6 +1194,8 @@ CFG_base определяется по cfg_type:
   function handleExcelUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
+    methodFileName = file.name;
+    updateMethodTitle();
 
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -1143,6 +1255,8 @@ CFG_base определяется по cfg_type:
         buildGroupsFromMethodology();
         hasMethodology = true;
         onMethodologyLoaded();
+        document.getElementById('methodSuccessHint').style.display = 'block';
+        updateMethodTitle();
       } catch (err) {
         console.error(err);
         alert('Ошибка при чтении файла Excel: ' + err.message);
@@ -1161,8 +1275,9 @@ CFG_base определяется по cfg_type:
         group = {
           code,
           name,
-          color: randomColorFromCode(code),
+          color: colorPaletteFromCode(code),
           rows: [],
+          state: { hidden: false },
           stats: {
             itemsCount: 0,
             cfgBaseSum: 0,
@@ -1187,6 +1302,8 @@ CFG_base определяется по cfg_type:
 
     renderSectionsCards();
     renderMethodologyTable();
+    updateTotalsLabels();
+    applyLabels();
   }
 
   // === Карточки разделов ===
@@ -1208,7 +1325,8 @@ CFG_base определяется по cfg_type:
       const card = document.createElement('div');
       card.className = 'section-card';
       card.dataset.groupCode = group.code;
-      card.style.backgroundImage = group.color;
+      card.style.backgroundImage = group.color.accent;
+      card.style.borderColor = group.color.border;
 
       const header = document.createElement('div');
       header.className = 'section-card-header';
@@ -1221,9 +1339,10 @@ CFG_base определяется по cfg_type:
       const meta = document.createElement('div');
       meta.className = 'section-card-meta';
       meta.innerHTML = `
-        <div>Строк методики: ${group.rows.length}</div>
-        <div>CFG база: <span data-role="cfg-base">0</span></div>
-        <div>Σ (без K_platform): <span data-role="sum-no-k">0</span></div>
+        <div class="stat-line"><span>Строк методики:</span><span>${group.rows.length}</span></div>
+        <div class="stat-line"><span>Строк в таблице расчётов:</span><span data-role="row-count">0</span></div>
+        <div class="stat-line"><span>${labelWithCode('Трудоёмкость конфигурирования', 'CFG')} базовое:</span><span data-role="cfg-base">0</span></div>
+        <div class="stat-line"><span>Σ (без ${labelWithCode('Коэффициента платформы', 'K_platform')}):</span><span data-role="sum-no-k">0</span></div>
       `;
       header.appendChild(meta);
 
@@ -1235,14 +1354,16 @@ CFG_base определяется по cfg_type:
       const hideId = `hide_${group.code}`;
       const onlyId = `only_${group.code}`;
       flags.innerHTML = `
-        <label>
-          <input type="checkbox" id="${hideId}"/>
-          <span>Скрыть раздел</span>
-        </label>
-        <label>
-          <input type="checkbox" id="${onlyId}"/>
-          <span>Только этот</span>
-        </label>
+        <div style=\"display:flex;gap:10px;align-items:center;\">\
+          <label>\
+            <input type=\"checkbox\" id=\"${hideId}\"/>\
+            <span>Скрыть раздел</span>\
+          </label>\
+          <label>\
+            <input type=\"checkbox\" id=\"${onlyId}\"/>\
+            <span>Только этот</span>\
+          </label>\
+        </div>
       `;
       const empty = document.createElement('div');
       empty.className = 'empty-badge';
@@ -1272,36 +1393,47 @@ CFG_base определяется по cfg_type:
 
       const hideCheckbox = document.getElementById(hideId);
       const onlyCheckbox = document.getElementById(onlyId);
+      hideCheckbox.checked = group.state.hidden;
+      onlyCheckbox.checked = activeOnlyGroup === group.code;
+      card.classList.toggle('inactive', group.state.hidden || (activeOnlyGroup && activeOnlyGroup !== group.code));
 
       hideCheckbox.addEventListener('change', () => {
         const hidden = hideCheckbox.checked;
-        card.style.display = hidden ? 'none' : 'flex';
+        group.state.hidden = hidden;
+        card.classList.toggle('inactive', hidden || (activeOnlyGroup && activeOnlyGroup !== group.code));
         if (hidden) {
           onlyCheckbox.checked = false;
+          if (activeOnlyGroup === group.code) activeOnlyGroup = null;
         }
+        renderCalcTable();
       });
 
       onlyCheckbox.addEventListener('change', () => {
         const onlyChecked = onlyCheckbox.checked;
-        const allCards = container.querySelectorAll('.section-card');
-        allCards.forEach(c => {
-          const gc = c.dataset.groupCode;
-          if (gc === group.code) {
-            c.style.display = 'flex';
-          } else {
-            c.style.display = onlyChecked ? 'none' : 'flex';
-          }
-        });
-        if (!onlyChecked) {
-          // сброс всех чекбоксов "Только этот"
+        activeOnlyGroup = onlyChecked ? group.code : null;
+        if (onlyChecked) {
           container.querySelectorAll('input[id^="only_"]').forEach(inp => {
             if (inp.id !== onlyId) inp.checked = false;
           });
         }
+        updateCardsState();
+        renderCalcTable();
       });
     });
 
+    updateCardsState();
     recalcGroupStats();
+  }
+
+  function updateCardsState() {
+    const container = document.getElementById('sectionsContainer');
+    container.querySelectorAll('.section-card').forEach(card => {
+      const code = card.dataset.groupCode;
+      const group = groupsMap.get(code);
+      const hidden = group?.state.hidden;
+      const onlyFiltered = activeOnlyGroup && activeOnlyGroup !== code;
+      card.classList.toggle('inactive', hidden || onlyFiltered);
+    });
   }
 
   function recalcGroupStats() {
@@ -1314,7 +1446,8 @@ CFG_base определяется по cfg_type:
 
     calcItems.forEach(item => {
       const group = groupsMap.get(item.group_code);
-      if (!group) return;
+      if (!group || group.state.hidden) return;
+      if (activeOnlyGroup && activeOnlyGroup !== item.group_code) return;
       group.stats.itemsCount++;
       group.stats.cfgBaseSum += item.cfg_base || 0;
       group.stats.totalWithoutK += item.eff_total || 0;
@@ -1327,9 +1460,11 @@ CFG_base определяется по cfg_type:
       if (!group) return;
       const cfgSpan = card.querySelector('[data-role="cfg-base"]');
       const sumSpan = card.querySelector('[data-role="sum-no-k"]');
+      const rowsSpan = card.querySelector('[data-role="row-count"]');
       const emptyBadge = card.querySelector('[data-role="empty-badge"]');
       if (cfgSpan) cfgSpan.textContent = fmtNumber(group.stats.cfgBaseSum, 2);
       if (sumSpan) sumSpan.textContent = fmtNumber(group.stats.totalWithoutK, 2);
+      if (rowsSpan) rowsSpan.textContent = group.stats.itemsCount;
       if (emptyBadge) {
         emptyBadge.style.display = group.stats.itemsCount === 0 ? 'inline-block' : 'none';
       }
@@ -1690,130 +1825,169 @@ CFG_base определяется по cfg_type:
     const tbody = document.getElementById('calcTableBody');
     tbody.innerHTML = '';
 
-    calcItems.forEach((item, index) => {
-      const tr = document.createElement('tr');
+    let index = 1;
+    Array.from(groupsMap.values()).forEach(group => {
+      if (!group) return;
+      if (group.state.hidden) return;
+      if (activeOnlyGroup && activeOnlyGroup !== group.code) return;
+      const items = calcItems.filter(it => it.group_code === group.code);
+      if (items.length === 0) return;
 
-      const tdIdx = document.createElement('td');
-      tdIdx.className = 'cell-number';
-      tdIdx.textContent = String(index + 1);
-      tr.appendChild(tdIdx);
+      const groupRow = document.createElement('tr');
+      groupRow.className = 'group-header-row';
+      groupRow.style.background = group.color.header;
+      const groupCell = document.createElement('td');
+      groupCell.colSpan = 16;
+      groupCell.textContent = labelWithCode(group.name || group.code, group.code);
+      groupRow.appendChild(groupCell);
+      tbody.appendChild(groupRow);
 
-      const tdSection = document.createElement('td');
-      tdSection.textContent = item.group_name || item.group_code;
-      tr.appendChild(tdSection);
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.style.background = group.color.soft;
 
-      const tdElement = document.createElement('td');
-      let text = '';
-      if (showCodes && item.element_code) {
-        text = '[' + item.element_code + '] ' + (item.element_name || '');
-      } else {
-        text = item.element_name || item.element_code || '';
-      }
-      tdElement.textContent = text;
-      if (item.cfg_type === 'individual') {
-        const tag = document.createElement('span');
-        tag.className = 'tag-flag';
-        tag.textContent = 'individual';
-        tdElement.appendChild(tag);
-      }
-      if (item.scaling_type && item.scaling_type !== 'none') {
-        const tag = document.createElement('span');
-        tag.className = 'tag-flag';
-        tag.textContent = item.scaling_type;
-        tdElement.appendChild(tag);
-      }
-      tr.appendChild(tdElement);
+        const tdIdx = document.createElement('td');
+        tdIdx.className = 'cell-number';
+        tdIdx.textContent = String(index++);
+        tr.appendChild(tdIdx);
 
-      const tdCfgBase = document.createElement('td');
-      tdCfgBase.className = 'cell-number';
-      tdCfgBase.textContent = fmtNumber(item.cfg_base, 3);
-      tr.appendChild(tdCfgBase);
+        const tdSection = document.createElement('td');
+        tdSection.textContent = labelWithCode(item.group_name || item.group_code, item.group_code);
+        tr.appendChild(tdSection);
 
-      const tdKAnds = document.createElement('td');
-      tdKAnds.className = 'cell-number';
-      tdKAnds.textContent = fmtNumber(item.k_ands, 2);
-      tr.appendChild(tdKAnds);
-
-      const tdKTest = document.createElement('td');
-      tdKTest.className = 'cell-number';
-      tdKTest.textContent = fmtNumber(item.k_test, 2);
-      tr.appendChild(tdKTest);
-
-      const tdKDoc = document.createElement('td');
-      tdKDoc.className = 'cell-number';
-      tdKDoc.textContent = fmtNumber(item.k_doc, 2);
-      tr.appendChild(tdKDoc);
-
-      const tdKi = document.createElement('td');
-      tdKi.className = 'cell-number';
-      const ki = 1 + item.k_ands + item.k_test + item.k_doc;
-      tdKi.textContent = fmtNumber(ki, 2);
-      tr.appendChild(tdKi);
-
-      const tdQty = document.createElement('td');
-      tdQty.className = 'cell-number';
-      tdQty.textContent = String(item.qty);
-      tr.appendChild(tdQty);
-
-      const tdTotalNoK = document.createElement('td');
-      tdTotalNoK.className = 'cell-number';
-      tdTotalNoK.textContent = fmtNumber(item.eff_total, 2);
-      tr.appendChild(tdTotalNoK);
-
-      const tdCfgPhase = document.createElement('td');
-      tdCfgPhase.className = 'cell-number';
-      tdCfgPhase.textContent = fmtNumber(item.eff_cfg, 2);
-      tr.appendChild(tdCfgPhase);
-
-      const tdAndsPhase = document.createElement('td');
-      tdAndsPhase.className = 'cell-number';
-      tdAndsPhase.textContent = fmtNumber(item.eff_ands, 2);
-      tr.appendChild(tdAndsPhase);
-
-      const tdTestPhase = document.createElement('td');
-      tdTestPhase.className = 'cell-number';
-      tdTestPhase.textContent = fmtNumber(item.eff_test, 2);
-      tr.appendChild(tdTestPhase);
-
-      const tdDocPhase = document.createElement('td');
-      tdDocPhase.className = 'cell-number';
-      tdDocPhase.textContent = fmtNumber(item.eff_doc, 2);
-      tr.appendChild(tdDocPhase);
-
-      const tdComment = document.createElement('td');
-      tdComment.textContent = item.comment || '';
-      tr.appendChild(tdComment);
-
-      const tdActions = document.createElement('td');
-      tdActions.className = 'cell-actions';
-      const editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.className = 'button-secondary button-sm';
-      editBtn.textContent = 'Редактировать';
-      editBtn.addEventListener('click', () => openElementModalForEdit(item.id));
-      tdActions.appendChild(editBtn);
-
-      const delBtn = document.createElement('button');
-      delBtn.type = 'button';
-      delBtn.className = 'button-danger button-sm';
-      delBtn.textContent = 'Удалить';
-      delBtn.style.marginLeft = '4px';
-      delBtn.addEventListener('click', () => {
-        if (confirm('Удалить элемент из расчёта?')) {
-          calcItems = calcItems.filter(x => x.id !== item.id);
-          renderCalcTable();
-          recalcGroupStats();
-          document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
+        const tdElement = document.createElement('td');
+        let text = '';
+        if (showCodes && item.element_code) {
+          text = `${item.element_name || ''} — ${item.element_code}`;
+        } else {
+          text = item.element_name || item.element_code || '';
         }
+        tdElement.textContent = text;
+        if (item.cfg_type === 'individual') {
+          const tag = document.createElement('span');
+          tag.className = 'tag-flag';
+          tag.textContent = 'individual';
+          tdElement.appendChild(tag);
+        }
+        if (item.scaling_type && item.scaling_type !== 'none') {
+          const tag = document.createElement('span');
+          tag.className = 'tag-flag';
+          tag.textContent = item.scaling_type;
+          tdElement.appendChild(tag);
+        }
+        tr.appendChild(tdElement);
+
+        const tdCfgBase = document.createElement('td');
+        tdCfgBase.className = 'cell-number';
+        tdCfgBase.textContent = fmtNumber(item.cfg_base, 3);
+        tr.appendChild(tdCfgBase);
+
+        const tdKAnds = document.createElement('td');
+        tdKAnds.className = 'cell-number';
+        tdKAnds.textContent = fmtNumber(item.k_ands, 2);
+        tr.appendChild(tdKAnds);
+
+        const tdKTest = document.createElement('td');
+        tdKTest.className = 'cell-number';
+        tdKTest.textContent = fmtNumber(item.k_test, 2);
+        tr.appendChild(tdKTest);
+
+        const tdKDoc = document.createElement('td');
+        tdKDoc.className = 'cell-number';
+        tdKDoc.textContent = fmtNumber(item.k_doc, 2);
+        tr.appendChild(tdKDoc);
+
+        const tdKi = document.createElement('td');
+        tdKi.className = 'cell-number';
+        const ki = 1 + item.k_ands + item.k_test + item.k_doc;
+        tdKi.textContent = fmtNumber(ki, 2);
+        tr.appendChild(tdKi);
+
+        const tdQty = document.createElement('td');
+        tdQty.className = 'cell-number';
+        tdQty.textContent = String(item.qty);
+        tr.appendChild(tdQty);
+
+        const tdTotalNoK = document.createElement('td');
+        tdTotalNoK.className = 'cell-number';
+        tdTotalNoK.textContent = fmtNumber(item.eff_total, 2);
+        tr.appendChild(tdTotalNoK);
+
+        const tdCfgPhase = document.createElement('td');
+        tdCfgPhase.className = 'cell-number';
+        tdCfgPhase.textContent = fmtNumber(item.eff_cfg, 2);
+        tr.appendChild(tdCfgPhase);
+
+        const tdAndsPhase = document.createElement('td');
+        tdAndsPhase.className = 'cell-number';
+        tdAndsPhase.textContent = fmtNumber(item.eff_ands, 2);
+        tr.appendChild(tdAndsPhase);
+
+        const tdTestPhase = document.createElement('td');
+        tdTestPhase.className = 'cell-number';
+        tdTestPhase.textContent = fmtNumber(item.eff_test, 2);
+        tr.appendChild(tdTestPhase);
+
+        const tdDocPhase = document.createElement('td');
+        tdDocPhase.className = 'cell-number';
+        tdDocPhase.textContent = fmtNumber(item.eff_doc, 2);
+        tr.appendChild(tdDocPhase);
+
+        const tdComment = document.createElement('td');
+        tdComment.textContent = item.comment || '';
+        tr.appendChild(tdComment);
+
+        const tdActions = document.createElement('td');
+        tdActions.className = 'cell-actions';
+        const editBtn = document.createElement('button');
+        editBtn.type = 'button';
+        editBtn.className = 'action-icon';
+        editBtn.textContent = '📝';
+        editBtn.title = 'Редактировать';
+        editBtn.addEventListener('click', () => openElementModalForEdit(item.id));
+        tdActions.appendChild(editBtn);
+
+        const dupBtn = document.createElement('button');
+        dupBtn.type = 'button';
+        dupBtn.className = 'action-icon';
+        dupBtn.textContent = '➕';
+        dupBtn.title = 'Дублировать';
+        dupBtn.addEventListener('click', () => duplicateItem(item.id));
+        tdActions.appendChild(dupBtn);
+
+        const delBtn = document.createElement('button');
+        delBtn.type = 'button';
+        delBtn.className = 'action-icon';
+        delBtn.textContent = '❌';
+        delBtn.title = 'Удалить';
+        delBtn.addEventListener('click', () => {
+          if (confirm('Удалить элемент из расчёта?')) {
+            calcItems = calcItems.filter(x => x.id !== item.id);
+            renderCalcTable();
+            recalcGroupStats();
+            document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
+          }
+        });
+        tdActions.appendChild(delBtn);
+
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
       });
-      tdActions.appendChild(delBtn);
-
-      tr.appendChild(tdActions);
-
-      tbody.appendChild(tr);
     });
 
     recalcTotals();
+    recalcGroupStats();
+  }
+
+  function duplicateItem(itemId) {
+    const original = calcItems.find(x => x.id === itemId);
+    if (!original) return;
+    const copy = { ...original, id: nextItemId++ };
+    calcItems.push(copy);
+    renderCalcTable();
+    recalcGroupStats();
+    document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
   }
 
   function recalcTotals() {
@@ -1824,6 +1998,9 @@ CFG_base определяется по cfg_type:
     let sumTotal = 0;
 
     calcItems.forEach(item => {
+      const group = groupsMap.get(item.group_code);
+      if (!group || group.state.hidden) return;
+      if (activeOnlyGroup && activeOnlyGroup !== item.group_code) return;
       sumCfg += item.eff_cfg || 0;
       sumAnds += item.eff_ands || 0;
       sumTest += item.eff_test || 0;
@@ -2078,6 +2255,9 @@ CFG_base определяется по cfg_type:
     document.getElementById('rowsSummaryBadge').textContent = 'Строк: ' + calcItems.length;
 
     document.getElementById('methodStatusBadge').textContent = 'Методика загружена (из снапшота)';
+    methodFileName = file.name || 'Снапшот';
+    document.getElementById('methodSuccessHint').style.display = 'block';
+    updateMethodTitle();
     document.getElementById('kPlatformInput').disabled = false;
     document.getElementById('openMethodologyBtn').disabled = false;
     document.getElementById('toggleShowCodes').disabled = false;
