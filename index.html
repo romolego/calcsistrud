@@ -1,1 +1,944 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор трудозатрат по конфигурированию</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --accent: #2563eb;
+      --accent-2: #0ea5e9;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: linear-gradient(120deg, var(--accent), var(--accent-2));
+      color: #fff;
+      padding: 32px 20px 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      max-width: 900px;
+    }
+    main {
+      max-width: 1200px;
+      margin: -30px auto 60px;
+      padding: 0 16px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      padding: 16px 18px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+    .card h2, .card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+    .muted { color: var(--muted); }
+    .flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .grid { display: grid; gap: 12px; }
+    .grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 14px;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; }
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.05s ease, box-shadow 0.2s ease;
+    }
+    button:active { transform: translateY(1px); }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 18px rgba(37,99,235,0.25); }
+    .btn-secondary { background: #eef2ff; color: #3730a3; }
+    .btn-ghost { background: #f3f4f6; color: var(--text); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-success { background: var(--success); color: #fff; }
+    .collapse-toggle { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--accent); }
+    .hidden { display: none !important; }
+    .section-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+    .section-card {
+      position: relative;
+      padding: 14px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff, #f8fafc);
+      border: 1px solid var(--border);
+    }
+    .section-card h4 { margin: 0 0 6px; font-size: 16px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px; background: #e0f2fe; color: #075985; }
+    .section-meta { font-size: 13px; color: var(--muted); margin: 6px 0; line-height: 1.4; }
+    .section-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+    .section-actions label { font-weight: 500; }
+    .fab-btn {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    thead { background: #f3f4f6; position: sticky; top: 0; z-index: 1; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13px; }
+    th { font-weight: 700; }
+    tbody tr:nth-child(every) { background: #fafafa; }
+    .actions button { margin-right: 6px; }
+    .pill { display: inline-block; padding: 2px 6px; border-radius: 6px; background: #e5e7eb; font-size: 12px; }
+    .totals { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .total-item { background: #0f172a; color: #fff; padding: 12px; border-radius: 12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.05); }
+    .total-item span { display: block; font-size: 13px; opacity: 0.8; }
+    .total-item strong { font-size: 18px; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: #e2e8f0; border-radius: 10px; font-size: 12px; }
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      width: min(940px, 95vw);
+      max-height: 92vh;
+      overflow: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+    }
+    .modal header { background: none; color: inherit; padding: 0 0 12px; box-shadow: none; }
+    .modal header h3 { margin: 0; }
+    .modal-close { background: transparent; color: var(--muted); }
+    .error { color: var(--danger); font-size: 13px; }
+    .info-text { background: #f8fafc; padding: 10px; border-radius: 10px; border: 1px solid var(--border); font-size: 13px; }
+    .chip { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #f1f5f9; margin: 2px 4px 2px 0; font-size: 12px; }
+    .fixed-table-header { overflow: auto; max-height: 480px; }
+    .table-empty { text-align: center; padding: 20px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Калькулятор трудозатрат по конфигурированию</h1>
+    <p>Одностраничный офлайн-инструмент для расчёта трудоёмкости конфигурирования. Загрузите Excel методику, чтобы начать работу.</p>
+  </header>
+  <main>
+    <section class="card" id="project-card">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Реквизиты проекта</h2>
+        <button class="btn-ghost" id="project-toggle">Свернуть</button>
+      </div>
+      <div id="project-body" class="grid cols-2">
+        <div><label>Название проекта</label><input id="project-name" type="text" placeholder="Введите название" /></div>
+        <div><label>Дата расчёта</label><input id="project-date" type="date" /></div>
+        <div><label>Версия расчёта</label><input id="project-version" type="text" placeholder="v1.0" /></div>
+        <div><label>Исполнитель</label><input id="project-owner" type="text" placeholder="ФИО" /></div>
+        <div><label>Потенциальный заказчик</label><input id="project-client" type="text" placeholder="Компания" /></div>
+      </div>
+    </section>
 
+    <section class="card">
+      <h2>Загрузить методику</h2>
+      <p class="muted">После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.</p>
+      <div class="flex">
+        <input type="file" id="excel-input" accept=".xlsx" />
+        <button class="btn-primary" id="load-excel">Загрузить методику (Excel)</button>
+        <div class="error" id="excel-error"></div>
+      </div>
+    </section>
+
+    <section class="card" id="sections-card">
+      <div class="flex" style="justify-content: space-between; align-items: center;">
+        <h2>Разделы конфигурирования</h2>
+        <div class="tag muted">Недоступно до загрузки Excel</div>
+      </div>
+      <div id="section-container" class="section-cards"></div>
+    </section>
+
+    <section class="card" id="table-card">
+      <div class="flex" style="justify-content: space-between;">
+        <h2>Таблица расчётов</h2>
+        <button class="btn-primary" id="add-row-btn" disabled>Добавить элемент</button>
+      </div>
+      <div class="fixed-table-header">
+        <table>
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Раздел</th>
+              <th>Элемент</th>
+              <th>CFG базовое</th>
+              <th>k_ANDS</th>
+              <th>k_TEST</th>
+              <th>k_DOC</th>
+              <th>k_i</th>
+              <th>Кол-во</th>
+              <th>CFG итог TOTAL (без K_platform)</th>
+              <th>CFG фаза</th>
+              <th>ANDS фаза</th>
+              <th>TEST фаза</th>
+              <th>DOC фаза</th>
+              <th>Комментарий</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="calc-body">
+            <tr><td class="table-empty" colspan="16">Загрузите методику, чтобы добавить элементы</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="params-card">
+      <h2>Параметры расчёта</h2>
+      <div class="grid cols-2">
+        <div>
+          <label for="k-platform">K_platform</label>
+          <input id="k-platform" type="number" min="0" step="0.01" value="1" disabled />
+          <p class="muted" style="margin:6px 0 0;">Масштабирует итоговую трудоёмкость проекта.</p>
+        </div>
+        <div class="grid">
+          <label>Каталог методики</label>
+          <button class="btn-secondary" id="open-methodology" disabled>Исходные данные методики</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="totals-card">
+      <h2>Итоги по проекту</h2>
+      <div class="totals" id="totals">
+        <div class="total-item"><span>CFG</span><strong id="total-cfg">0</strong></div>
+        <div class="total-item"><span>ANDS</span><strong id="total-ands">0</strong></div>
+        <div class="total-item"><span>TEST</span><strong id="total-test">0</strong></div>
+        <div class="total-item"><span>DOC</span><strong id="total-doc">0</strong></div>
+        <div class="total-item"><span>TOTAL (с K_platform)</span><strong id="total-full">0</strong></div>
+      </div>
+    </section>
+
+    <section class="card" id="extra-card">
+      <div class="flex" style="justify-content: space-between; align-items: center;">
+        <h2>Дополнительные функции</h2>
+        <button class="btn-ghost" id="extra-toggle">Свернуть</button>
+      </div>
+      <div id="extra-body" class="grid cols-3">
+        <div>
+          <h3>Отображение</h3>
+          <label class="flex" style="gap:8px; align-items:center;">
+            <input type="checkbox" id="toggle-codes" disabled /> Показывать коды элементов
+          </label>
+        </div>
+        <div>
+          <h3>Экспорт / импорт</h3>
+          <div class="grid">
+            <button class="btn-secondary" id="export-summary" disabled>Экспорт сводного CSV</button>
+            <button class="btn-secondary" id="export-detailed" disabled>Экспорт детального CSV</button>
+            <button class="btn-secondary" id="save-snapshot" disabled>Сохранить снапшот (JSON)</button>
+            <input type="file" id="load-snapshot-input" accept="application/json" style="display:none;" />
+            <button class="btn-secondary" id="load-snapshot" disabled>Загрузить снапшот (JSON)</button>
+          </div>
+        </div>
+        <div>
+          <h3>Служебные отметки</h3>
+          <p class="muted">Все функции становятся доступны после загрузки методики.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay hidden" id="element-modal">
+    <div class="modal">
+      <header class="flex" style="justify-content: space-between; align-items:center;">
+        <h3 id="modal-title">Элемент раздела</h3>
+        <button class="modal-close" data-close="element-modal">✕</button>
+      </header>
+      <div class="grid cols-2">
+        <div>
+          <label>Раздел</label>
+          <select id="modal-group"></select>
+        </div>
+        <div>
+          <label>Тип элемента</label>
+          <select id="modal-element"></select>
+        </div>
+        <div>
+          <label>Название элемента</label>
+          <input type="text" id="modal-name" placeholder="Название" />
+        </div>
+        <div>
+          <label>Количество (шт.)</label>
+          <input type="number" id="modal-qty" min="1" value="1" />
+        </div>
+        <div>
+          <label>CFG базовое</label>
+          <input type="number" id="modal-cfg-base" step="0.01" />
+        </div>
+        <div>
+          <label>Параметр value (приращение)</label>
+          <input type="number" id="modal-value" min="0" step="0.01" value="0" />
+        </div>
+        <div>
+          <label>k_ANDS</label>
+          <input type="number" id="modal-k-ands" step="0.01" />
+        </div>
+        <div>
+          <label>k_TEST</label>
+          <input type="number" id="modal-k-test" step="0.01" />
+        </div>
+        <div>
+          <label>k_DOC</label>
+          <input type="number" id="modal-k-doc" step="0.01" />
+        </div>
+        <div>
+          <label>Уникальная логика</label>
+          <select id="modal-unique">
+            <option value="false">Нет</option>
+            <option value="true">Да</option>
+          </select>
+        </div>
+        <div>
+          <label>Системные расчёты</label>
+          <select id="modal-system">
+            <option value="false">Нет</option>
+            <option value="true">Да</option>
+          </select>
+        </div>
+        <div>
+          <label>Комментарий</label>
+          <textarea id="modal-comment" placeholder="Комментарий"></textarea>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="info-text" id="formula-help"></div>
+      <div class="error" id="modal-error"></div>
+      <div class="flex" style="justify-content: flex-end; margin-top: 12px; gap: 8px;">
+        <button class="btn-ghost" data-close="element-modal">Отмена</button>
+        <button class="btn-primary" id="modal-save">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="methodology-modal">
+    <div class="modal">
+      <header class="flex" style="justify-content: space-between; align-items:center;">
+        <h3>Исходные данные методики</h3>
+        <button class="modal-close" data-close="methodology-modal">✕</button>
+      </header>
+      <div id="methodology-content" class="grid"></div>
+    </div>
+  </div>
+
+  <script src="./xlsx.full.min.js"></script>
+  <script>
+    const REQUIRED_COLUMNS = [
+      'group_code','group_name','element_code','element_name','complexity_score_min','complexity_score_max','area','category_label','cfg_type','cfg_min','cfg_max','cfg_fixed','ands_coeff','test_coeff','doc_coeff','scaling_type','base_value','base_unit','step','delta_cfg','multiplier','pack_size','has_unique_logic_flag','has_system_calculations_flag','is_individual','cfg_custom_max','short_description'
+    ];
+
+    const state = {
+      methodology: [],
+      groups: [],
+      rows: [],
+      editingId: null,
+      showCodes: false,
+      loaded: false,
+    };
+
+    const elements = {
+      excelInput: document.getElementById('excel-input'),
+      loadExcelBtn: document.getElementById('load-excel'),
+      excelError: document.getElementById('excel-error'),
+      sectionContainer: document.getElementById('section-container'),
+      addRowBtn: document.getElementById('add-row-btn'),
+      calcBody: document.getElementById('calc-body'),
+      totals: {
+        cfg: document.getElementById('total-cfg'),
+        ands: document.getElementById('total-ands'),
+        test: document.getElementById('total-test'),
+        doc: document.getElementById('total-doc'),
+        full: document.getElementById('total-full'),
+      },
+      kPlatform: document.getElementById('k-platform'),
+      openMethodology: document.getElementById('open-methodology'),
+      toggleCodes: document.getElementById('toggle-codes'),
+      exportSummary: document.getElementById('export-summary'),
+      exportDetailed: document.getElementById('export-detailed'),
+      saveSnapshot: document.getElementById('save-snapshot'),
+      loadSnapshot: document.getElementById('load-snapshot'),
+      loadSnapshotInput: document.getElementById('load-snapshot-input'),
+      projectToggle: document.getElementById('project-toggle'),
+      projectBody: document.getElementById('project-body'),
+      extraToggle: document.getElementById('extra-toggle'),
+      extraBody: document.getElementById('extra-body'),
+    };
+
+    function setDisabled(disabled) {
+      elements.addRowBtn.disabled = disabled;
+      elements.kPlatform.disabled = disabled;
+      elements.openMethodology.disabled = disabled;
+      elements.toggleCodes.disabled = disabled;
+      elements.exportSummary.disabled = disabled;
+      elements.exportDetailed.disabled = disabled;
+      elements.saveSnapshot.disabled = disabled;
+      elements.loadSnapshot.disabled = disabled;
+      document.querySelectorAll('.fab-btn').forEach(btn => btn.disabled = disabled);
+    }
+
+    function showError(message) {
+      elements.excelError.textContent = message;
+      if (message) {
+        elements.excelError.classList.remove('hidden');
+      } else {
+        elements.excelError.classList.add('hidden');
+      }
+    }
+
+    function readExcel(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+            resolve(json);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+        reader.readAsArrayBuffer(file);
+      });
+    }
+
+    function validateColumns(rows) {
+      if (!rows.length) return 'Пустой файл методики.';
+      const columns = Object.keys(rows[0]);
+      const missing = REQUIRED_COLUMNS.filter(col => !columns.includes(col));
+      if (missing.length) {
+        return `Отсутствуют обязательные столбцы: ${missing.join(', ')}`;
+      }
+      return '';
+    }
+
+    function initFromMethodology(rows) {
+      state.methodology = rows;
+      state.groups = Array.from(new Set(rows.map(r => r.group_code))).map(code => {
+        const found = rows.find(r => r.group_code === code);
+        return { code, name: found ? found.group_name : code, color: getColor(code) };
+      });
+      state.rows = [];
+      state.loaded = true;
+      renderGroups();
+      renderTable();
+      renderTotals();
+      populateModalDefaults();
+      populateMethodologyModal();
+      setDisabled(false);
+      document.querySelector('#sections-card .tag')?.classList.add('hidden');
+    }
+
+    function getColor(key) {
+      const palette = ['#e0f2fe','#e9d5ff','#dcfce7','#fff7ed','#fce7f3','#f1f5f9'];
+      let hash = 0;
+      for (let i = 0; i < key.length; i++) hash += key.charCodeAt(i);
+      return palette[hash % palette.length];
+    }
+
+    function renderGroups() {
+      elements.sectionContainer.innerHTML = '';
+      state.groups.forEach(group => {
+        const card = document.createElement('div');
+        card.className = 'section-card';
+        card.style.background = `linear-gradient(180deg, #fff, ${getColor(group.code)})`;
+        const stats = groupStats(group.code);
+        card.innerHTML = `
+          <h4>${group.name}</h4>
+          <div class="section-meta">
+            Строк: <strong>${stats.count}</strong><br/>
+            CFG база: <strong>${stats.base.toFixed(2)}</strong><br/>
+            Σ (без K_platform): <strong>${stats.total.toFixed(2)}</strong>
+          </div>
+          ${stats.count === 0 ? '<span class="badge">Пустой раздел</span>' : ''}
+          <div class="section-actions">
+            <label><input type="checkbox" data-hide="${group.code}"> Скрыть раздел</label>
+            <label><input type="checkbox" data-only="${group.code}"> Только этот</label>
+          </div>
+          <button class="btn-primary fab-btn" data-add="${group.code}">Добавить элемент</button>
+        `;
+        elements.sectionContainer.appendChild(card);
+      });
+      elements.sectionContainer.querySelectorAll('[data-add]').forEach(btn => {
+        btn.addEventListener('click', () => openElementModal(btn.dataset.add));
+      });
+      elements.sectionContainer.querySelectorAll('[data-hide]').forEach(chk => {
+        chk.addEventListener('change', () => {
+          const code = chk.dataset.hide;
+          const rows = elements.calcBody.querySelectorAll(`tr[data-group="${code}"]`);
+          rows.forEach(r => r.style.display = chk.checked ? 'none' : '');
+        });
+      });
+      elements.sectionContainer.querySelectorAll('[data-only]').forEach(chk => {
+        chk.addEventListener('change', () => {
+          const code = chk.dataset.only;
+          const rows = elements.calcBody.querySelectorAll('tr[data-group]');
+          rows.forEach(r => {
+            if (chk.checked) {
+              r.style.display = r.dataset.group === code ? '' : 'none';
+            } else {
+              r.style.display = '';
+            }
+          });
+          elements.sectionContainer.querySelectorAll('[data-only]').forEach(other => {
+            if (other !== chk) other.checked = false;
+          });
+        });
+      });
+    }
+
+    function groupStats(code) {
+      const rows = state.rows.filter(r => r.group_code === code);
+      const base = rows.reduce((s, r) => s + (Number(r.cfg_base) || 0), 0);
+      const total = rows.reduce((s, r) => s + (r.eff_total || 0), 0);
+      return { count: rows.length, base, total };
+    }
+
+    function populateModalDefaults() {
+      const groupSelect = document.getElementById('modal-group');
+      groupSelect.innerHTML = state.groups.map(g => `<option value="${g.code}">${g.name}</option>`).join('');
+      populateElementsForGroup(groupSelect.value);
+    }
+
+    function populateElementsForGroup(groupCode) {
+      const elementSelect = document.getElementById('modal-element');
+      const options = state.methodology.filter(r => r.group_code === groupCode);
+      elementSelect.innerHTML = options.map(opt => `<option value="${opt.element_code}">${opt.element_code} — ${opt.element_name}</option>`).join('');
+      updateModalByElement(elementSelect.value);
+    }
+
+    function updateModalByElement(code) {
+      const element = state.methodology.find(r => r.element_code === code);
+      if (!element) return;
+      document.getElementById('modal-name').value = element.element_name;
+      document.getElementById('modal-cfg-base').value = element.cfg_type === 'fixed' ? element.cfg_fixed : element.cfg_min;
+      document.getElementById('modal-k-ands').value = element.ands_coeff;
+      document.getElementById('modal-k-test').value = element.test_coeff;
+      document.getElementById('modal-k-doc').value = element.doc_coeff;
+      document.getElementById('modal-unique').value = String(!!element.has_unique_logic_flag);
+      document.getElementById('modal-system').value = String(!!element.has_system_calculations_flag);
+      document.getElementById('formula-help').textContent = buildFormulaText(element);
+    }
+
+    function buildFormulaText(element) {
+      const scaling = {
+        additive: 'additive: CFG_base + steps * delta_cfg',
+        multiplicative: 'multiplicative: CFG_base * (multiplier ^ steps)',
+        package: 'package: CFG_base * количество пакетов',
+        none: 'none: CFG_base без изменений'
+      };
+      return `CFG_type: ${element.cfg_type}. Scaling: ${scaling[element.scaling_type] || 'n/a'}. База ${element.cfg_min}..${element.cfg_max}. Требуется комментарий для individual.`;
+    }
+
+    function openElementModal(groupCode, rowId = null) {
+      state.editingId = rowId;
+      document.getElementById('modal-title').textContent = rowId ? 'Редактировать элемент' : 'Новый элемент';
+      document.getElementById('modal-error').textContent = '';
+      document.getElementById('modal-comment').value = '';
+      document.getElementById('modal-qty').value = 1;
+      document.getElementById('modal-value').value = 0;
+      const groupSelect = document.getElementById('modal-group');
+      groupSelect.value = groupCode || state.groups[0]?.code;
+      populateElementsForGroup(groupSelect.value);
+      if (rowId) fillModalForEdit(rowId);
+      document.getElementById('element-modal').classList.remove('hidden');
+    }
+
+    function fillModalForEdit(id) {
+      const row = state.rows.find(r => r.id === id);
+      if (!row) return;
+      document.getElementById('modal-group').value = row.group_code;
+      populateElementsForGroup(row.group_code);
+      document.getElementById('modal-element').value = row.element_code;
+      updateModalByElement(row.element_code);
+      document.getElementById('modal-name').value = row.element_name;
+      document.getElementById('modal-cfg-base').value = row.cfg_base;
+      document.getElementById('modal-qty').value = row.qty;
+      document.getElementById('modal-value').value = row.value;
+      document.getElementById('modal-k-ands').value = row.k_ands;
+      document.getElementById('modal-k-test').value = row.k_test;
+      document.getElementById('modal-k-doc').value = row.k_doc;
+      document.getElementById('modal-unique').value = String(row.has_unique_logic_flag);
+      document.getElementById('modal-system').value = String(row.has_system_calculations_flag);
+      document.getElementById('modal-comment').value = row.comment || '';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function getElementByCode(code) {
+      return state.methodology.find(r => r.element_code === code);
+    }
+
+    function validateModal(element) {
+      const qty = Number(document.getElementById('modal-qty').value);
+      const cfgBase = Number(document.getElementById('modal-cfg-base').value);
+      const value = Number(document.getElementById('modal-value').value);
+      const comment = document.getElementById('modal-comment').value.trim();
+
+      if (!Number.isFinite(qty) || qty <= 0) return 'Количество должно быть больше 0';
+      if (!Number.isFinite(cfgBase)) return 'CFG базовое должно быть числом';
+      if (['additive','multiplicative','package'].includes(element.scaling_type) && value <= 0) return 'Value должен быть > 0 для выбранного scaling';
+
+      if (element.cfg_type === 'range') {
+        const min = Number(element.cfg_min);
+        const max = Number(element.cfg_max);
+        if (cfgBase < min || cfgBase > max) return `CFG должно быть в диапазоне ${min}..${max}`;
+      }
+      if (element.cfg_type === 'individual') {
+        if (!comment) return 'Комментарий обязателен для индивидуальных элементов';
+        const customMax = Number(element.cfg_custom_max);
+        if (Number.isFinite(customMax) && customMax > 0 && cfgBase > customMax) return `CFG не может превышать ${customMax}`;
+      }
+      if (!Number.isFinite(value)) return 'Value должно быть числом';
+      return '';
+    }
+
+    function saveModal() {
+      const groupCode = document.getElementById('modal-group').value;
+      const elementCode = document.getElementById('modal-element').value;
+      const methodologyItem = getElementByCode(elementCode);
+      if (!methodologyItem) return;
+      const error = validateModal(methodologyItem);
+      const errorBox = document.getElementById('modal-error');
+      if (error) { errorBox.textContent = error; return; }
+      errorBox.textContent = '';
+
+      const data = {
+        id: state.editingId || crypto.randomUUID(),
+        group_code: groupCode,
+        group_name: methodologyItem.group_name,
+        element_code: elementCode,
+        element_name: document.getElementById('modal-name').value,
+        cfg_type: methodologyItem.cfg_type,
+        cfg_min: Number(methodologyItem.cfg_min),
+        cfg_max: Number(methodologyItem.cfg_max),
+        cfg_fixed: Number(methodologyItem.cfg_fixed),
+        cfg_base: Number(document.getElementById('modal-cfg-base').value),
+        value: Number(document.getElementById('modal-value').value),
+        scaling_type: methodologyItem.scaling_type,
+        base_value: Number(methodologyItem.base_value),
+        step: Number(methodologyItem.step),
+        delta_cfg: Number(methodologyItem.delta_cfg),
+        multiplier: Number(methodologyItem.multiplier || 1),
+        pack_size: Number(methodologyItem.pack_size || 1),
+        qty: Number(document.getElementById('modal-qty').value),
+        k_ands: Number(document.getElementById('modal-k-ands').value),
+        k_test: Number(document.getElementById('modal-k-test').value),
+        k_doc: Number(document.getElementById('modal-k-doc').value),
+        has_unique_logic_flag: document.getElementById('modal-unique').value === 'true',
+        has_system_calculations_flag: document.getElementById('modal-system').value === 'true',
+        comment: document.getElementById('modal-comment').value.trim(),
+      };
+      const computed = computeRow(data, methodologyItem);
+      Object.assign(data, computed);
+
+      if (state.editingId) {
+        const idx = state.rows.findIndex(r => r.id === state.editingId);
+        if (idx !== -1) state.rows[idx] = data;
+      } else {
+        state.rows.push(data);
+      }
+      state.editingId = null;
+      renderTable();
+      renderTotals();
+      renderGroups();
+      closeModal('element-modal');
+    }
+
+    function computeRow(row, element) {
+      let cfgBase = row.cfg_base;
+      if (element.cfg_type === 'fixed') cfgBase = Number(element.cfg_fixed);
+      if (element.cfg_type === 'range') cfgBase = row.cfg_base;
+      if (element.cfg_type === 'individual') cfgBase = row.cfg_base;
+
+      let cfgIntermediate = cfgBase;
+      const value = row.value;
+      const baseValue = Number(element.base_value);
+      const step = Number(element.step || 1);
+      const delta = Number(element.delta_cfg || 0);
+      const multiplier = Number(element.multiplier || 1);
+      const packSize = Number(element.pack_size || 1);
+
+      if (element.scaling_type === 'additive') {
+        if (value > baseValue) {
+          const steps = Math.ceil((value - baseValue) / step);
+          cfgIntermediate = cfgBase + steps * delta;
+        }
+      } else if (element.scaling_type === 'multiplicative') {
+        if (value > baseValue) {
+          const steps = Math.ceil((value - baseValue) / step);
+          cfgIntermediate = cfgBase * Math.pow(multiplier, steps);
+        }
+      } else if (element.scaling_type === 'package') {
+        const packs = Math.ceil(value / packSize);
+        cfgIntermediate = cfgBase * packs;
+      }
+
+      if (row.has_unique_logic_flag) cfgIntermediate *= 2;
+      if (row.has_system_calculations_flag) cfgIntermediate *= 2;
+
+      const effCfg = cfgIntermediate * row.qty;
+      const effAnds = effCfg * row.k_ands;
+      const effTest = effCfg * row.k_test;
+      const effDoc = effCfg * row.k_doc;
+      const effTotal = effCfg + effAnds + effTest + effDoc;
+
+      return {
+        cfg_intermediate: cfgIntermediate,
+        eff_cfg: effCfg,
+        eff_ands: effAnds,
+        eff_test: effTest,
+        eff_doc: effDoc,
+        eff_total: effTotal,
+        k_i: row.k_ands + row.k_test + row.k_doc + 1,
+      };
+    }
+
+    function renderTable() {
+      elements.calcBody.innerHTML = '';
+      if (!state.rows.length) {
+        elements.calcBody.innerHTML = '<tr><td class="table-empty" colspan="16">Нет данных. Добавьте элементы.</td></tr>';
+        return;
+      }
+      state.rows.forEach((row, idx) => {
+        const tr = document.createElement('tr');
+        tr.dataset.group = row.group_code;
+        const name = state.showCodes ? `${row.element_code}: ${row.element_name}` : row.element_name;
+        tr.innerHTML = `
+          <td>${idx + 1}</td>
+          <td>${row.group_name}</td>
+          <td>${name}</td>
+          <td>${row.cfg_intermediate?.toFixed(2) ?? row.cfg_base.toFixed(2)}</td>
+          <td>${row.k_ands}</td>
+          <td>${row.k_test}</td>
+          <td>${row.k_doc}</td>
+          <td>${(row.k_i || 0).toFixed(2)}</td>
+          <td>${row.qty}</td>
+          <td>${row.eff_total.toFixed(2)}</td>
+          <td>${row.eff_cfg.toFixed(2)}</td>
+          <td>${row.eff_ands.toFixed(2)}</td>
+          <td>${row.eff_test.toFixed(2)}</td>
+          <td>${row.eff_doc.toFixed(2)}</td>
+          <td>${row.comment || ''}</td>
+          <td class="actions">
+            <button class="btn-ghost" data-edit="${row.id}">Ред.</button>
+            <button class="btn-danger" data-del="${row.id}">Удалить</button>
+          </td>
+        `;
+        elements.calcBody.appendChild(tr);
+      });
+      elements.calcBody.querySelectorAll('[data-edit]').forEach(btn => btn.addEventListener('click', () => openElementModal(null, btn.dataset.edit)));
+      elements.calcBody.querySelectorAll('[data-del]').forEach(btn => btn.addEventListener('click', () => deleteRow(btn.dataset.del)));
+    }
+
+    function deleteRow(id) {
+      state.rows = state.rows.filter(r => r.id !== id);
+      renderTable();
+      renderTotals();
+      renderGroups();
+    }
+
+    function renderTotals() {
+      const sumCfg = state.rows.reduce((s, r) => s + (r.eff_cfg || 0), 0);
+      const sumAnds = state.rows.reduce((s, r) => s + (r.eff_ands || 0), 0);
+      const sumTest = state.rows.reduce((s, r) => s + (r.eff_test || 0), 0);
+      const sumDoc = state.rows.reduce((s, r) => s + (r.eff_doc || 0), 0);
+      const k = Number(elements.kPlatform.value) || 1;
+      const total = (sumCfg + sumAnds + sumTest + sumDoc) * k;
+      elements.totals.cfg.textContent = sumCfg.toFixed(2);
+      elements.totals.ands.textContent = sumAnds.toFixed(2);
+      elements.totals.test.textContent = sumTest.toFixed(2);
+      elements.totals.doc.textContent = sumDoc.toFixed(2);
+      elements.totals.full.textContent = total.toFixed(2);
+    }
+
+    function populateMethodologyModal() {
+      const container = document.getElementById('methodology-content');
+      container.innerHTML = '';
+      state.groups.forEach(group => {
+        const wrap = document.createElement('div');
+        wrap.className = 'info-text';
+        wrap.innerHTML = `<strong>${group.code} — ${group.name}</strong><div class="divider"></div>`;
+        const list = state.methodology.filter(m => m.group_code === group.code).map(m => `<div class="chip">${m.element_code}: ${m.element_name}</div>`).join('');
+        wrap.innerHTML += list || '<span class="muted">Пусто</span>';
+        container.appendChild(wrap);
+      });
+    }
+
+    function exportCSV(detailed = false) {
+      const header = detailed ? ['№','Раздел','Код','Название','CFG итог','ANDS','TEST','DOC','TOTAL','Комментарий'] : ['Раздел','TOTAL'];
+      let rows = [];
+      if (detailed) {
+        rows = state.rows.map((r, i) => [i+1, r.group_name, r.element_code, r.element_name, r.eff_cfg.toFixed(2), r.eff_ands.toFixed(2), r.eff_test.toFixed(2), r.eff_doc.toFixed(2), r.eff_total.toFixed(2), r.comment || '']);
+      } else {
+        const grouped = {};
+        state.rows.forEach(r => {
+          grouped[r.group_name] = (grouped[r.group_name] || 0) + r.eff_total;
+        });
+        rows = Object.entries(grouped).map(([group, total]) => [group, total.toFixed(2)]);
+      }
+      const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      downloadFile(csv, detailed ? 'detailed.csv' : 'summary.csv', 'text/csv');
+    }
+
+    function saveSnapshotFile() {
+      const snapshot = {
+        project: {
+          name: document.getElementById('project-name').value,
+          date: document.getElementById('project-date').value,
+          version: document.getElementById('project-version').value,
+          owner: document.getElementById('project-owner').value,
+          client: document.getElementById('project-client').value,
+        },
+        k_platform: elements.kPlatform.value,
+        methodology: state.methodology,
+        rows: state.rows,
+      };
+      downloadFile(JSON.stringify(snapshot, null, 2), 'snapshot.json', 'application/json');
+    }
+
+    function loadSnapshotFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const snapshot = JSON.parse(e.target.result);
+          if (!snapshot.methodology || !Array.isArray(snapshot.methodology)) throw new Error('Некорректный снапшот');
+          state.methodology = snapshot.methodology;
+          state.groups = Array.from(new Set(state.methodology.map(r => r.group_code))).map(code => {
+            const found = state.methodology.find(r => r.group_code === code);
+            return { code, name: found ? found.group_name : code, color: getColor(code) };
+          });
+          state.rows = snapshot.rows || [];
+          state.loaded = true;
+          document.getElementById('project-name').value = snapshot.project?.name || '';
+          document.getElementById('project-date').value = snapshot.project?.date || '';
+          document.getElementById('project-version').value = snapshot.project?.version || '';
+          document.getElementById('project-owner').value = snapshot.project?.owner || '';
+          document.getElementById('project-client').value = snapshot.project?.client || '';
+          elements.kPlatform.value = snapshot.k_platform || 1;
+          setDisabled(false);
+          renderGroups();
+          renderTable();
+          renderTotals();
+          populateMethodologyModal();
+          document.querySelector('#sections-card .tag')?.classList.add('hidden');
+        } catch (err) {
+          alert('Ошибка загрузки снапшота: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadFile(content, name, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    elements.loadExcelBtn.addEventListener('click', async () => {
+      const file = elements.excelInput.files?.[0];
+      if (!file) { showError('Выберите файл Excel.'); return; }
+      showError('');
+      try {
+        const rows = await readExcel(file);
+        const validation = validateColumns(rows);
+        if (validation) { showError(validation); return; }
+        initFromMethodology(rows);
+      } catch (err) {
+        showError(err.message || 'Ошибка загрузки файла');
+      }
+    });
+
+    document.getElementById('modal-group').addEventListener('change', (e) => populateElementsForGroup(e.target.value));
+    document.getElementById('modal-element').addEventListener('change', (e) => updateModalByElement(e.target.value));
+    elements.addRowBtn.addEventListener('click', () => openElementModal(state.groups[0]?.code));
+    document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.close)));
+    document.getElementById('modal-save').addEventListener('click', saveModal);
+    elements.kPlatform.addEventListener('input', renderTotals);
+    elements.toggleCodes.addEventListener('change', () => { state.showCodes = elements.toggleCodes.checked; renderTable(); });
+    elements.exportSummary.addEventListener('click', () => exportCSV(false));
+    elements.exportDetailed.addEventListener('click', () => exportCSV(true));
+    elements.saveSnapshot.addEventListener('click', saveSnapshotFile);
+    elements.loadSnapshot.addEventListener('click', () => elements.loadSnapshotInput.click());
+    elements.loadSnapshotInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) loadSnapshotFile(file);
+    });
+    elements.openMethodology.addEventListener('click', () => document.getElementById('methodology-modal').classList.remove('hidden'));
+
+    elements.projectToggle.addEventListener('click', () => {
+      const hidden = elements.projectBody.classList.toggle('hidden');
+      elements.projectToggle.textContent = hidden ? 'Развернуть' : 'Свернуть';
+    });
+    elements.extraToggle.addEventListener('click', () => {
+      const hidden = elements.extraBody.classList.toggle('hidden');
+      elements.extraToggle.textContent = hidden ? 'Развернуть' : 'Свернуть';
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+      }
+    });
+  </script>
+</body>
+</html>
