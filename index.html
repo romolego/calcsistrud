@@ -193,23 +193,28 @@
     }
 
     .method-layout {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex;
       gap: 6px;
-      grid-auto-rows: auto;
-      align-items: end;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+    }
+
+    .method-file-row,
+    .method-actions {
+      width: 45%;
+      min-width: 0;
+      display: flex;
+      align-items: flex-end;
     }
 
     .method-file-row {
-      display: flex;
       flex-direction: column;
       gap: 3px;
       height: 100%;
     }
 
     .method-actions {
-      display: flex;
-      align-items: flex-end;
       height: 100%;
     }
 
@@ -218,7 +223,7 @@
     }
 
     .method-hint {
-      grid-column: 1 / -1;
+      width: 100%;
     }
 
     .method-footer {
@@ -477,6 +482,19 @@
       font-size: 11px;
       color: var(--muted);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .label-main {
+      color: var(--fg);
+      font-weight: 600;
+      display: block;
+    }
+    .label-code {
+      color: var(--muted);
+      display: block;
+      font-size: 10px;
     }
     .total-card-value {
       font-size: 18px;
@@ -783,7 +801,7 @@
       padding-right: 14px;
     }
 
-    .table-topbar {
+  .table-topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -912,10 +930,10 @@
         <div class="method-actions">
           <button type="button" class="button-secondary" id="openMethodologyBtn" disabled>Исходные данные методики</button>
         </div>
-        <div class="upload-hint method-hint">
-          После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
-          Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
-        </div>
+      </div>
+      <div class="upload-hint method-hint">
+        После загрузки Excel методика и все элементы калькулятора будут сформированы автоматически.<br/>
+        Обязательные столбцы: group_code, group_name, element_code, ..., short_description.
       </div>
       <div class="method-footer">
         <div class="status-text" id="methodSuccessHint" style="display:none;">Файл успешно загружен.</div>
@@ -933,7 +951,6 @@
     <div class="section-header">
       <div>
         <h2>Разделы конфигурирования</h2>
-        <small>Карточки разделов формируются по данным методики после загрузки Excel</small>
       </div>
       <span class="badge" id="sectionsSummaryBadge">Разделы: 0</span>
     </div>
@@ -949,26 +966,24 @@
 
   <!-- Таблица расчётов -->
   <section class="section">
-    <div class="section-header">
+    <div class="section-header table-topbar">
       <div>
         <h2>Таблица расчётов</h2>
       </div>
+      <div class="table-topbar-right">
+        <label class="toggle-switch">
+          <input type="checkbox" id="collapseCalcTable" checked>
+          <span>Сжать таблицу по ширине</span>
+        </label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="collapseCalcTableHeight" checked>
+          <span>Сжать таблицу по высоте</span>
+        </label>
+        <span class="table-counter">Количество разделов: <span id="calcSectionsCount">0</span></span>
+        <span class="table-counter">Количество строк: <span id="calcRowsCount">0</span></span>
+      </div>
     </div>
     <div class="section-body">
-      <div class="table-topbar">
-        <div class="table-topbar-right">
-          <span class="table-counter">Количество разделов: <span id="calcSectionsCount">0</span></span>
-          <span class="table-counter">Количество строк: <span id="calcRowsCount">0</span></span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="collapseCalcTable" checked>
-            <span>Сжать таблицу по ширине</span>
-          </label>
-          <label class="toggle-switch">
-            <input type="checkbox" id="collapseCalcTableHeight" checked>
-            <span>Сжать таблицу по высоте</span>
-          </label>
-        </div>
-      </div>
       <div class="table-wrapper" id="calcTableWrapper">
         <table id="calcTable">
           <thead>
@@ -976,17 +991,17 @@
             <th class="number-col">№</th>
             <th>Раздел</th>
             <th>Элемент (код + имя)</th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (базовое)" data-label-code="CFG"><span class="label-text">CFG базовое</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование (коэффициент)" data-label-code="ANDS"><span class="label-text">k_ANDS</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Тестирование (коэффициент)" data-label-code="TEST"><span class="label-text">k_TEST</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Документирование (коэффициент)" data-label-code="DOC"><span class="label-text">k_DOC</span><br/><span class="muted">коэффициент / трудоёмкость (чел./ч)</span></th>
             <th class="number-col" data-label-base="Итоговый коэффициент по элементу" data-label-code="k_i"><span class="label-text">k_i</span><br/><span class="muted">коэффициент</span></th>
             <th class="number-col">Кол-во</th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
-            <th class="number-col" data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (человеко-часы)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования (итог без коэффициента платформы)" data-label-code="CFG"><span class="label-text">CFG итог TOTAL<br/>(без K_platform)</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Трудоёмкость конфигурирования" data-label-code="CFG"><span class="label-text">CFG фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Анализ и проектирование" data-label-code="ANDS"><span class="label-text">ANDS фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Тестирование" data-label-code="TEST"><span class="label-text">TEST фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
+            <th class="number-col" data-label-base="Документирование" data-label-code="DOC"><span class="label-text">DOC фаза</span><br/><span class="muted">трудоёмкость (чел./ч)</span></th>
             <th>Комментарий</th>
             <th class="number-col">Действия</th>
           </tr>
@@ -1000,34 +1015,36 @@
   </section>
 
   <!-- Итоги по проекту -->
-  <section class="section">
+  <section class="section" id="totalsSection">
     <div class="section-header">
       <div>
-        <h2>Итоги по проекту</h2>
-        <small>Сводные значения CFG, ANDS, TEST, DOC и TOTAL</small>
+        <h2 id="projectTotalsTitle">Итоги по проекту</h2>
+      </div>
+      <div class="controls-group">
+        <button type="button" class="button-secondary" id="exportTotalsPngBtn">PNG</button>
       </div>
     </div>
     <div class="section-body">
       <div class="totals-row">
         <div class="total-card">
-          <div class="total-card-label" id="totalCfgLabel">CFG (суммарно по элементам)</div>
-          <div class="total-card-value"><span id="totalCfg">0</span><span class="total-card-unit">человеко-дни</span></div>
+          <div class="total-card-label" id="totalCfgLabel">CFG</div>
+          <div class="total-card-value"><span id="totalCfg">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalAndsLabel">ANDS</div>
-          <div class="total-card-value"><span id="totalAnds">0</span><span class="total-card-unit">человеко-дни</span></div>
+          <div class="total-card-value"><span id="totalAnds">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalTestLabel">TEST</div>
-          <div class="total-card-value"><span id="totalTest">0</span><span class="total-card-unit">человеко-дни</span></div>
+          <div class="total-card-value"><span id="totalTest">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
         <div class="total-card">
           <div class="total-card-label" id="totalDocLabel">DOC</div>
-          <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">человеко-дни</span></div>
+          <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
         <div class="total-card">
-          <div class="total-card-label" id="totalOverallLabel">TOTAL (с учётом K_platform)</div>
-          <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">человеко-дни</span></div>
+          <div class="total-card-label" id="totalOverallLabel">TOTAL</div>
+          <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
       </div>
     </div>
@@ -1038,7 +1055,6 @@
     <div class="section-header">
       <div>
         <h2>Дополнительные функции</h2>
-        <small>Отображение, экспорт/импорт, снапшоты</small>
       </div>
       <button type="button" class="section-toggle" id="toggleExtrasBtn">Свернуть</button>
     </div>
@@ -1194,9 +1210,6 @@ CFG_base определяется по cfg_type:
       <button type="button" class="icon-button" aria-label="Закрыть" id="closeMethodologyModalBtn">✖</button>
     </div>
     <div class="modal-body">
-      <div class="upload-hint" style="margin-bottom:4px;">
-        Одна строка Excel = один элемент методики. Отображаются все обязательные поля.
-      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
         <label class="toggle-switch">
           <input type="checkbox" id="collapseMethodologyTable" checked>
@@ -1213,27 +1226,27 @@ CFG_base определяется по cfg_type:
         <table id="methodologyTable">
           <thead>
           <tr>
-            <th>group_code</th>
-            <th>group_name</th>
-            <th>element_code</th>
-            <th>element_name</th>
-            <th>cfg_type</th>
-            <th>cfg_min</th>
-            <th>cfg_max</th>
-            <th>cfg_fixed</th>
-            <th>ands_coeff</th>
-            <th>test_coeff</th>
-            <th>doc_coeff</th>
-            <th>scaling_type</th>
-            <th>base_value</th>
-            <th>step</th>
-            <th>delta_cfg</th>
-            <th>multiplier</th>
-            <th>pack_size</th>
-            <th>has_unique_logic_flag</th>
-            <th>has_system_calculations_flag</th>
-            <th>is_individual</th>
-            <th>cfg_custom_max</th>
+            <th title="Код раздела в методике">group_code</th>
+            <th title="Название раздела">group_name</th>
+            <th title="Код элемента методики">element_code</th>
+            <th title="Название элемента методики">element_name</th>
+            <th title="Тип расчёта CFG (fixed, range, individual)">cfg_type</th>
+            <th title="Минимальное значение CFG для типа range">cfg_min</th>
+            <th title="Максимальное значение CFG для типа range">cfg_max</th>
+            <th title="Фиксированное значение CFG для типа fixed">cfg_fixed</th>
+            <th title="Коэффициент для этапа анализа и проектирования">ands_coeff</th>
+            <th title="Коэффициент для этапа тестирования">test_coeff</th>
+            <th title="Коэффициент для этапа документирования">doc_coeff</th>
+            <th title="Тип наращивания CFG (additive, multiplicative, package, none)">scaling_type</th>
+            <th title="Базовое значение параметра value">base_value</th>
+            <th title="Шаг прироста параметра value">step</th>
+            <th title="Приращение CFG на каждый шаг для additive">delta_cfg</th>
+            <th title="Множитель CFG на каждый шаг для multiplicative">multiplier</th>
+            <th title="Размер пакета для типа package">pack_size</th>
+            <th title="Флаг уникальной логики (1/0)">has_unique_logic_flag</th>
+            <th title="Флаг системных расчётов (1/0)">has_system_calculations_flag</th>
+            <th title="Отметка индивидуального элемента (1/0)">is_individual</th>
+            <th title="Максимально допустимое пользовательское CFG для individual">cfg_custom_max</th>
           </tr>
           </thead>
           <tbody id="methodologyTableBody">
@@ -1261,6 +1274,7 @@ CFG_base определяется по cfg_type:
   let editingItemId = null;
   let methodFileName = '';
   let activeOnlyGroup = null;
+  let html2canvasLoader = null;
 
   let nextItemId = 1;
 
@@ -1377,6 +1391,14 @@ CFG_base определяется по cfg_type:
     return showCodes ? `${base} — ${code}` : base;
   }
 
+  function setLabelWithCodeLines(el, base, code, hint = '') {
+    if (!el) return;
+    const parts = [`<span class="label-main">${base}</span>`];
+    if (showCodes && code) parts.push(`<span class="label-code">${code}</span>`);
+    if (hint) parts.push(`<span class="label-code">${hint}</span>`);
+    el.innerHTML = parts.join('');
+  }
+
   // === Инициализация ===
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1483,6 +1505,8 @@ CFG_base определяется по cfg_type:
       if (e.target === e.currentTarget) closeMethodologyModal();
     });
 
+    document.getElementById('exportTotalsPngBtn').addEventListener('click', exportTotalsAsPng);
+
     document.getElementById('collapseCalcTable').addEventListener('change', toggleCalcTableWidth);
     document.getElementById('collapseCalcTableHeight').addEventListener('change', toggleCalcTableHeight);
     document.getElementById('collapseMethodologyTable').addEventListener('change', toggleMethodologyTableWidth);
@@ -1516,6 +1540,7 @@ CFG_base определяется по cfg_type:
     } else {
       title.textContent = 'Реквизиты проекта';
     }
+    updateProjectTotalsTitle();
   }
 
   function updateMethodTitle() {
@@ -1526,6 +1551,13 @@ CFG_base определяется по cfg_type:
     } else {
       title.textContent = 'Загрузка методики (Excel)';
     }
+  }
+
+  function updateProjectTotalsTitle() {
+    const name = (document.getElementById('projectName').value || '').trim();
+    const title = document.getElementById('projectTotalsTitle');
+    if (!title) return;
+    title.textContent = name ? `Итоги по проекту "${name}"` : 'Итоги по проекту';
   }
 
   function setDefaultProjectMeta() {
@@ -1539,11 +1571,12 @@ CFG_base определяется по cfg_type:
   }
 
   function updateTotalsLabels() {
-    document.getElementById('totalCfgLabel').textContent = labelWithCode('Трудоёмкость конфигурирования', 'CFG');
-    document.getElementById('totalAndsLabel').textContent = labelWithCode('Анализ и проектирование', 'ANDS');
-    document.getElementById('totalTestLabel').textContent = labelWithCode('Тестирование', 'TEST');
-    document.getElementById('totalDocLabel').textContent = labelWithCode('Документирование', 'DOC');
-    document.getElementById('totalOverallLabel').textContent = labelWithCode('Итоговая трудоёмкость', 'TOTAL') + ' (с учётом ' + labelWithCode('Коэффициента платформы', 'K_platform') + ')';
+    setLabelWithCodeLines(document.getElementById('totalCfgLabel'), 'Трудоёмкость конфигурирования', 'CFG', 'суммарно по элементам');
+    setLabelWithCodeLines(document.getElementById('totalAndsLabel'), 'Анализ и проектирование', 'ANDS');
+    setLabelWithCodeLines(document.getElementById('totalTestLabel'), 'Тестирование', 'TEST');
+    setLabelWithCodeLines(document.getElementById('totalDocLabel'), 'Документирование', 'DOC');
+    const platformHint = showCodes ? 'с учётом K_platform' : 'с учётом коэффициента платформы';
+    setLabelWithCodeLines(document.getElementById('totalOverallLabel'), 'Итоговая трудоёмкость', 'TOTAL', platformHint);
   }
 
   function updateCalcCounters() {
@@ -1689,7 +1722,6 @@ CFG_base определяется по cfg_type:
           state: { hidden: false },
           stats: {
             itemsCount: 0,
-            cfgBaseSum: 0,
             totalWithoutK: 0
           }
         };
@@ -1750,8 +1782,8 @@ CFG_base определяется по cfg_type:
       meta.className = 'section-card-meta';
       meta.innerHTML = `
         <div class="stat-line"><span>Строк методики:</span><span>${group.rows.length}</span></div>
-        <div class="stat-line"><span>Трудоёмкость конфигурирования (${labelWithCode('CFG', 'CFG')}):</span><span data-role="cfg-base">0</span><span class="total-card-unit">чел-дни</span></div>
-        <div class="stat-line"><span>Итоговая трудоёмкость (без коэф-та платформы):</span><span data-role="sum-no-k">0</span><span class="total-card-unit">чел-дни</span></div>
+        <div class="stat-line"><span>Строк в таблице:</span><span data-role="row-count">0</span></div>
+        <div class="stat-line"><span>Итоговая трудоёмкость:</span><span data-role="sum-no-k">0</span><span class="total-card-unit">чел./дн.</span></div>
       `;
       header.appendChild(meta);
 
@@ -1871,7 +1903,6 @@ CFG_base определяется по cfg_type:
     // обнулить
     groupsMap.forEach(group => {
       group.stats.itemsCount = 0;
-      group.stats.cfgBaseSum = 0;
       group.stats.totalWithoutK = 0;
     });
 
@@ -1880,7 +1911,6 @@ CFG_base определяется по cfg_type:
       if (!group || group.state.hidden) return;
       if (activeOnlyGroup && activeOnlyGroup !== item.group_code) return;
       group.stats.itemsCount++;
-      group.stats.cfgBaseSum += item.cfg_base || 0;
       group.stats.totalWithoutK += item.eff_total || 0;
     });
 
@@ -1889,11 +1919,9 @@ CFG_base определяется по cfg_type:
       const code = card.dataset.groupCode;
       const group = groupsMap.get(code);
       if (!group) return;
-      const cfgSpan = card.querySelector('[data-role="cfg-base"]');
       const sumSpan = card.querySelector('[data-role="sum-no-k"]');
       const rowsSpan = card.querySelector('[data-role="row-count"]');
       const emptyBadge = card.querySelector('[data-role="empty-badge"]');
-      if (cfgSpan) cfgSpan.textContent = fmtNumber(group.stats.cfgBaseSum, 2);
       if (sumSpan) sumSpan.textContent = fmtNumber(group.stats.totalWithoutK, 2);
       if (rowsSpan) rowsSpan.textContent = group.stats.itemsCount;
       if (emptyBadge) {
@@ -2286,7 +2314,7 @@ CFG_base определяется по cfg_type:
       const totalBadge = document.createElement('span');
       totalBadge.className = 'group-stat-badge';
       const groupTotal = items.reduce((acc, it) => acc + (it.eff_total || 0), 0);
-      totalBadge.textContent = `Итого трудоёмкость раздела: ${fmtNumber(groupTotal, 2)} чел-дни`;
+      totalBadge.textContent = `Итоговая трудоёмкость: ${fmtNumber(groupTotal, 2)} чел./дн.`;
       statsWrap.appendChild(rowsBadge);
       statsWrap.appendChild(totalBadge);
 
@@ -2472,6 +2500,38 @@ CFG_base определяется по cfg_type:
     document.getElementById('totalTest').textContent = fmtNumber(test, 2);
     document.getElementById('totalDoc').textContent = fmtNumber(doc, 2);
     document.getElementById('totalOverall').textContent = fmtNumber(totalWithK, 2);
+  }
+
+  function loadHtml2Canvas() {
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    if (html2canvasLoader) return html2canvasLoader;
+    html2canvasLoader = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      script.async = true;
+      script.onload = () => resolve(window.html2canvas);
+      script.onerror = () => reject(new Error('html2canvas не загрузился'));
+      document.body.appendChild(script);
+    });
+    return html2canvasLoader;
+  }
+
+  async function exportTotalsAsPng() {
+    const target = document.getElementById('totalsSection');
+    if (!target) return;
+    try {
+      const html2canvas = await loadHtml2Canvas();
+      if (!html2canvas) throw new Error('html2canvas недоступен');
+      const canvas = await html2canvas(target, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+      const rawName = (document.getElementById('projectName').value || 'proekt').trim();
+      const safeName = rawName.replace(/[^a-zA-Zа-яА-Я0-9\-_\.]+/g, '_') || 'proekt';
+      const link = document.createElement('a');
+      link.download = `itogi_${safeName}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      alert('Не удалось выгрузить PNG: ' + err.message);
+    }
   }
 
   // === Методика: модальное окно ===
