@@ -383,9 +383,15 @@
     .section-card-flags {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      font-size: 9.5px;
-      line-height: 1.2;
+      gap: 4px;
+      font-size: 9px;
+      line-height: 1.15;
+    }
+    .section-card-flags .flag-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     .section-card-flags label span {
       white-space: nowrap;
@@ -393,9 +399,10 @@
     .section-card-flags label {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       cursor: pointer;
       white-space: nowrap;
+      font-size: 9px;
     }
     .section-card-actions {
       display: flex;
@@ -1936,12 +1943,12 @@ CFG_base определяется по cfg_type:
       const hideId = `hide_${group.code}`;
       const onlyId = `only_${group.code}`;
       flags.innerHTML = `
-        <div style=\"display:flex;gap:10px;align-items:center;flex-wrap:nowrap;\">\
-          <label style=\"display:flex;align-items:center;gap:4px;font-size:9.5px;\">\
+        <div class="flag-row">\
+          <label>\
             <input type=\"checkbox\" id=\"${hideId}\"/>\
             <span>Скрыть этот раздел</span>\
           </label>\
-          <label style=\"display:flex;align-items:center;gap:4px;font-size:9.5px;\">\
+          <label>\
             <input type=\"checkbox\" id=\"${onlyId}\"/>\
             <span>Показать только этот раздел</span>\
           </label>\
