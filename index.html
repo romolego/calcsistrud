@@ -360,13 +360,14 @@
       width: 100%;
     }
     .section-card-meta {
-      font-size: 9.5px;
+      font-size: 10.5px;
       color: var(--muted);
       text-align: left;
       width: 100%;
       display: flex;
       flex-direction: column;
       gap: 2px;
+      line-height: 1.25;
     }
     .section-card-meta .stat-line {
       white-space: nowrap;
@@ -382,8 +383,9 @@
     .section-card-flags {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 10px;
+      gap: 5px;
+      font-size: 9.5px;
+      line-height: 1.2;
     }
     .section-card-flags label span {
       white-space: nowrap;
@@ -391,7 +393,7 @@
     .section-card-flags label {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       cursor: pointer;
       white-space: nowrap;
     }
@@ -704,12 +706,13 @@
     }
 
     #totalOverallCard {
-      background: linear-gradient(135deg, #e0f2fe, #f8fafc);
-      border-color: #bae6fd;
-      box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
+      background: #ffffff;
+      border-color: #94a3b8;
+      border-width: 1.5px;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.08);
     }
     #totalOverallCard .total-card-label {
-      color: #0284c7;
+      color: #0f172a;
     }
 
     .toggle-switch {
@@ -1009,7 +1012,7 @@
     <div class="section-header">
       <div>
         <h2 id="methodTitle">Загрузка методики (Excel)</h2>
-        <small>Главный запуск работы калькулятора</small>
+        <small>&nbsp;</small>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span class="badge" id="methodStatusBadge">Методика не загружена</span>
@@ -1933,12 +1936,12 @@ CFG_base определяется по cfg_type:
       const hideId = `hide_${group.code}`;
       const onlyId = `only_${group.code}`;
       flags.innerHTML = `
-        <div style=\"display:flex;gap:12px;align-items:center;flex-wrap:wrap;\">\
-          <label style=\"display:flex;align-items:center;gap:6px;\">\
+        <div style=\"display:flex;gap:10px;align-items:center;flex-wrap:nowrap;\">\
+          <label style=\"display:flex;align-items:center;gap:4px;font-size:9.5px;\">\
             <input type=\"checkbox\" id=\"${hideId}\"/>\
             <span>Скрыть этот раздел</span>\
           </label>\
-          <label style=\"display:flex;align-items:center;gap:6px;\">\
+          <label style=\"display:flex;align-items:center;gap:4px;font-size:9.5px;\">\
             <input type=\"checkbox\" id=\"${onlyId}\"/>\
             <span>Показать только этот раздел</span>\
           </label>\
