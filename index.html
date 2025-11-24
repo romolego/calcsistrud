@@ -42,6 +42,7 @@
       background: var(--card);
       border-radius: 8px;
       border: 1px solid var(--border);
+      text-align: center;
     }
     .page-header h1 {
       font-size: 22px;
@@ -327,13 +328,18 @@
 
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 1220px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
     }
     .section-card {
       position: relative;
       border-radius: 10px;
-      padding: 10px 12px 12px;
+      padding: 8px 10px 12px;
       border: 1px solid var(--border);
       background: linear-gradient(135deg, #e0f2fe, #f9fafb);
       display: flex;
@@ -349,12 +355,12 @@
       text-align: center;
     }
     .section-card-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       width: 100%;
     }
     .section-card-meta {
-      font-size: 10px;
+      font-size: 9.5px;
       color: var(--muted);
       text-align: left;
       width: 100%;
@@ -362,8 +368,9 @@
       flex-direction: column;
       gap: 2px;
     }
-    .section-card-meta div {
+    .section-card-meta .stat-line {
       white-space: nowrap;
+      align-items: center;
     }
     .section-card-body {
       display: flex;
@@ -377,6 +384,9 @@
       flex-direction: column;
       gap: 6px;
       font-size: 10px;
+    }
+    .section-card-flags label span {
+      white-space: nowrap;
     }
     .section-card-flags label {
       display: flex;
@@ -409,6 +419,15 @@
       border: 1px solid #facc15;
       margin-top: 2px;
     }
+    .empty-badge.filled {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #166534;
+    }
+    .section-card.has-rows [data-role="row-count"] {
+      color: var(--ok);
+      font-weight: 700;
+    }
 
     .table-wrapper {
       --cell-word-break: normal;
@@ -434,6 +453,12 @@
       max-height: none;
       overflow-y: visible;
       overflow-x: auto;
+    }
+    .table-wrapper.wide-table {
+      overflow-x: auto;
+    }
+    .table-wrapper.wide-table table {
+      min-width: 1400px;
     }
     .table-wrapper.compressed-table {
       --cell-word-break: break-word;
@@ -678,6 +703,15 @@
       color: #854d0e;
     }
 
+    #totalOverallCard {
+      background: linear-gradient(135deg, #e0f2fe, #f8fafc);
+      border-color: #bae6fd;
+      box-shadow: 0 4px 10px rgba(14, 165, 233, 0.15);
+    }
+    #totalOverallCard .total-card-label {
+      color: #0284c7;
+    }
+
     .toggle-switch {
       display: inline-flex;
       align-items: center;
@@ -915,8 +949,8 @@
       color: var(--muted);
     }
     .section-card-meta div {
-      white-space: normal;
-      word-break: break-word;
+      white-space: nowrap;
+      word-break: normal;
     }
 
     .section-card-footer {
@@ -1104,7 +1138,7 @@
           <div class="total-card-label" id="totalDocLabel">DOC</div>
           <div class="total-card-value"><span id="totalDoc">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
-        <div class="total-card">
+        <div class="total-card" id="totalOverallCard">
           <div class="total-card-label" id="totalOverallLabel">TOTAL</div>
           <div class="total-card-value"><span id="totalOverall">0</span><span class="total-card-unit">чел./дн.</span></div>
         </div>
@@ -1513,7 +1547,9 @@ CFG_base определяется по cfg_type:
   function toggleCalcTableWidth() {
     const wrapper = document.getElementById('calcTableWrapper');
     const checked = document.getElementById('collapseCalcTable').checked;
-    if (wrapper) wrapper.classList.toggle('compressed-table', checked);
+    if (!wrapper) return;
+    wrapper.classList.toggle('compressed-table', checked);
+    wrapper.classList.toggle('wide-table', !checked);
   }
 
   function toggleCalcTableHeight() {
@@ -2024,15 +2060,20 @@ CFG_base определяется по cfg_type:
       const sumSpan = card.querySelector('[data-role="sum-no-k"]');
       const rowsSpan = card.querySelector('[data-role="row-count"]');
       const emptyBadge = card.querySelector('[data-role="empty-badge"]');
+      const hasRows = group.stats.itemsCount > 0;
       if (sumSpan) sumSpan.textContent = fmtNumber(group.stats.totalWithoutK, 2);
-      if (rowsSpan) rowsSpan.textContent = group.stats.itemsCount;
+      if (rowsSpan) {
+        rowsSpan.textContent = group.stats.itemsCount;
+      }
+      card.classList.toggle('has-rows', hasRows);
       if (emptyBadge) {
-        if (group.stats.itemsCount === 0) {
+        if (!hasRows) {
           emptyBadge.textContent = 'Пустой раздел';
         } else {
           emptyBadge.textContent = `Строк в таблице: ${group.stats.itemsCount}`;
         }
         emptyBadge.style.display = 'inline-block';
+        emptyBadge.classList.toggle('filled', hasRows);
       }
     });
   }
